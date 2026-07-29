@@ -20,7 +20,7 @@ import { LandingFAQ } from "@/components/landing-faq";
 
 export default function HomePage() {
   return (
-    <div className="space-y-24 py-6 sm:py-10 max-w-6xl mx-auto">
+    <div className="space-y-24 py-6 sm:py-10 max-w-7xl mx-auto">
       {/* Hero Section */}
       <section className="relative text-center space-y-8 py-6 px-4">
         {/* Circular Stamp Element (Top Right floating) */}
@@ -58,12 +58,12 @@ export default function HomePage() {
         </p>
 
         {/* Hero CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <Link href="/signup" className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 pt-2 w-full max-w-xs sm:max-w-none mx-auto">
+          <Link href="/signup" className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
             <span>GET STARTED FREE</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
-          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-4">
+          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
             <KeyRound className="w-5 h-5 stroke-[2.5]" />
             <span>ENTER JOIN CODE</span>
           </Link>
@@ -284,12 +284,12 @@ export default function HomePage() {
           Join thousands of learners and educators creating engaging AI quizzes in seconds. Free forever for individuals.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-          <Link href="/signup" className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 pt-4 w-full max-w-xs sm:max-w-none mx-auto">
+          <Link href="/signup" className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
             <span>CREATE FREE ACCOUNT</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
-          <Link href="/quizzes/join" className="neo-btn neo-btn-lime text-base sm:text-lg px-8 py-4">
+          <Link href="/quizzes/join" className="neo-btn neo-btn-lime text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
             <span>JOIN A QUIZ NOW</span>
           </Link>
         </div>

@@ -92,12 +92,12 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-16">
-      <div className="flex items-center justify-between bg-white p-6 rounded-lg border border-neutral-200 shadow-sm sticky top-[76px] z-20">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-lg border border-neutral-200 shadow-sm sticky top-[76px] z-20">
         <div>
           <h2 className="text-2xl font-bebas tracking-wide text-neutral-900">Review & Publish Quiz</h2>
           <p className="text-sm text-neutral-500">Ensure the questions look correct before making it available.</p>
         </div>
-        <button onClick={handleSaveAndPublish} disabled={isPending} className="neo-btn neo-btn-cyan flex items-center gap-2 disabled:opacity-50">
+        <button onClick={handleSaveAndPublish} disabled={isPending} className="neo-btn neo-btn-cyan w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-50">
           {isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
           Publish Quiz
         </button>
@@ -110,24 +110,24 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
       )}
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-lg border border-neutral-200 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 bg-white p-4 sm:p-6 rounded-lg border border-neutral-200 shadow-sm">
           <div className="space-y-2 md:col-span-2 flex flex-col">
             <label className="text-sm font-bold uppercase text-black">Quiz Title</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} className="neo-input" />
           </div>
           <div className="space-y-2 flex flex-col">
             <label className="text-sm font-bold uppercase text-black">Difficulty</label>
-            <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")} className="neo-select">
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+            <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as "easy" | "medium" | "hard")} className="neo-input bg-white text-slate-900">
+              <option value="easy" className="bg-white text-slate-900">Easy</option>
+              <option value="medium" className="bg-white text-slate-900">Medium</option>
+              <option value="hard" className="bg-white text-slate-900">Hard</option>
             </select>
           </div>
           <div className="space-y-2 flex flex-col">
             <label className="text-sm font-bold uppercase text-black">Time Limit (Optional)</label>
-            <select value={timeLimit.toString()} onChange={(e) => setTimeLimit(parseInt(e.target.value, 10))} className="neo-select">
+            <select value={timeLimit.toString()} onChange={(e) => setTimeLimit(parseInt(e.target.value, 10))} className="neo-input bg-white text-slate-900">
               {TIME_LIMIT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-white text-slate-900">
                   {opt.label}
                 </option>
               ))}
@@ -138,7 +138,7 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
         <div className="space-y-6">
           <h3 className="text-xl font-bebas text-neutral-900">Questions</h3>
           {questions.map((q, qIndex) => (
-            <div key={qIndex} className="p-6 bg-white border border-neutral-200 rounded-lg shadow-sm space-y-4">
+            <div key={qIndex} className="p-4 sm:p-6 bg-white border border-neutral-200 rounded-lg shadow-sm space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-grow flex flex-col">
                   <label className="text-sm font-bold uppercase text-black">Question {qIndex + 1}</label>
@@ -146,8 +146,8 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
                     placeholder="Enter your question"
                     value={q.text}
                     onChange={(e) => updateQuestion(qIndex, "text", e.target.value)}
-                    rows={2}
-                    className="neo-input w-full resize-none"
+                    rows={3}
+                    className="neo-input w-full resize-y min-h-[100px] sm:min-h-[80px]"
                   />
                 </div>
                 {questions.length > 1 && (
@@ -184,8 +184,8 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
                   placeholder="Explain why the correct answer is correct..."
                   value={q.explanation || ""}
                   onChange={(e) => updateQuestion(qIndex, "explanation", e.target.value)}
-                  rows={2}
-                  className="neo-input w-full bg-slate-50 resize-none"
+                  rows={3}
+                  className="neo-input w-full bg-slate-50 resize-y min-h-[100px] sm:min-h-[80px]"
                 />
               </div>
             </div>

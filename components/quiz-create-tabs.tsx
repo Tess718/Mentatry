@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { generateQuizAction, createManualQuizAction } from "@/app/actions/quizzes";
 import { Brain, FileText, PenTool, Sparkles, Plus, Trash2, AlertCircle, Loader2, Timer } from "lucide-react";
@@ -39,6 +39,91 @@ function TimeLimitSelector({
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+const FUN_LOADING_TEXTS = [
+  "Teaching AI how to read...",
+  "Consulting with ancient scholars...",
+  "Flipping through the textbook...",
+  "Brewing some coffee for the neural network...",
+  "Sharpening virtual pencils...",
+  "Cross-referencing the archives...",
+  "Generating distractors that sound really smart...",
+  "Double-checking the correct answers...",
+  "Reticulating splines...",
+  "Almost there, formatting the quiz...",
+  "Arguing with Wikipedia editors...",
+  "Summoning knowledge from the cloud...",
+  "Fact-checking with invisible librarians...",
+  "Making wrong answers *convincingly* wrong...",
+  "Polishing tricky questions...",
+  "Scanning footnotes nobody reads...",
+  "Decoding complex concepts...",
+  "Turning notes into brain teasers...",
+  "Balancing difficulty levels...",
+  "Adding a sprinkle of challenge...",
+  "Rewriting questions for clarity...",
+  "Translating ideas into quiz form...",
+  "Consulting the algorithmic oracle...",
+  "Sorting facts from fiction...",
+  "Making sure the answers behave...",
+  "Organizing thoughts into neat questions...",
+  "Injecting a bit of academic chaos...",
+  "Calibrating question difficulty...",
+  "Reviewing everything one more time...",
+  "Packing knowledge into questions...",
+  "Simulating a very smart teacher...",
+  "Converting confusion into clarity...",
+  "Tuning the quiz engine...",
+  "Ensuring fair but tricky options...",
+  "Putting the final touches on your quiz...",
+];
+
+function FunLoader() {
+  const [textIndex, setTextIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const textInterval = setInterval(() => {
+      setTextIndex((prev) => (prev + 1) % FUN_LOADING_TEXTS.length);
+    }, 2500);
+    
+    // Fake progress bar that slows down as it gets closer to 95%
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 50) return prev + Math.random() * 5;
+        if (prev < 80) return prev + Math.random() * 2;
+        if (prev < 95) return prev + Math.random() * 0.5;
+        return prev;
+      });
+    }, 200);
+
+    return () => {
+      clearInterval(textInterval);
+      clearInterval(progressInterval);
+    };
+  }, []);
+
+  return (
+    <div className="w-full space-y-4 pt-4 border-t-4 border-slate-100">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-6 h-6 text-black animate-spin" />
+          <span className="font-black uppercase tracking-widest text-slate-900 transition-all duration-300">
+            {FUN_LOADING_TEXTS[textIndex]}
+          </span>
+        </div>
+        <span className="font-black text-slate-500">{Math.floor(progress)}%</span>
+      </div>
+      
+      <div className="w-full h-4 border-2 border-black bg-white p-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <div
+          className="h-full bg-lime-400 border-r border-black transition-all duration-200"
+          style={{ width: `${Math.min(progress, 100)}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -339,23 +424,18 @@ export function QuizCreateTabs() {
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={isPending || !topic.trim()}
-            className="neo-btn neo-btn-yellow w-full py-3 text-base flex items-center justify-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Generating Quiz</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                <span>Generate AI Quiz</span>
-              </>
-            )}
-          </button>
+          {isPending ? (
+            <FunLoader />
+          ) : (
+            <button
+              type="submit"
+              disabled={!topic.trim()}
+              className="neo-btn neo-btn-yellow w-full py-3 text-base flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>Generate AI Quiz</span>
+            </button>
+          )}
         </form>
       )}
 
@@ -429,23 +509,18 @@ export function QuizCreateTabs() {
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={isPending || text.trim().length < 20}
-            className="neo-btn neo-btn-cyan w-full py-3 text-base flex items-center justify-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Analyzing Text & Generating...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                <span>Generate Quiz From Text</span>
-              </>
-            )}
-          </button>
+          {isPending ? (
+            <FunLoader />
+          ) : (
+            <button
+              type="submit"
+              disabled={text.trim().length < 20}
+              className="neo-btn neo-btn-cyan w-full py-3 text-base flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>Generate Quiz From Text</span>
+            </button>
+          )}
         </form>
       )}
 

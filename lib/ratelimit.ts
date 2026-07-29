@@ -1,7 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "./redis";
 
-// In-memory rate limiter fallback for development when Upstash env variables are missing
 class MemoryRatelimit {
   private requests: Map<string, number[]> = new Map();
 
@@ -34,5 +33,14 @@ export const quizRatelimit = redis
       limiter: Ratelimit.slidingWindow(20, "15 m"),
       analytics: true,
       prefix: "@upstash/ratelimit/mentatry",
+    })
+  : new MemoryRatelimit();
+
+export const authRatelimit = redis
+  ? new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(10, "15 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/auth",
     })
   : new MemoryRatelimit();

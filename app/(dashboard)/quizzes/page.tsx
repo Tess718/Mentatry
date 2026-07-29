@@ -91,12 +91,12 @@ export default async function QuizzesDashboardPage() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
-          <Link href="/quizzes/new" className="neo-btn neo-btn-lime text-xs sm:text-sm px-2 py-0.5 whitespace-nowrap">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+          <Link href="/quizzes/new" className="neo-btn neo-btn-lime text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>CREATE NEW QUIZ</span>
           </Link>
-          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-xs sm:text-sm px-2 py-0.5 whitespace-nowrap">
+          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
             <KeyRound className="w-4 h-4 stroke-[3]" />
             <span>JOIN WITH CODE</span>
           </Link>

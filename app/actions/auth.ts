@@ -4,6 +4,8 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signIn, signOut } from "@/auth";
+import { headers } from "next/headers";
+import { authRatelimit } from "@/lib/ratelimit";
 
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -25,6 +27,14 @@ const loginSchema = z.object({
 
 export async function signupAction(prevState: any, formData: FormData) {
   try {
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for") ?? "127.0.0.1";
+    const { success: rateLimitSuccess } = await authRatelimit.limit(ip);
+    
+    if (!rateLimitSuccess) {
+      return { error: "Too many attempts. Please try again later." };
+    }
+
     const rawFirstName = formData.get("firstName") as string;
     const rawLastName = formData.get("lastName") as string;
     const rawEmail = formData.get("email") as string;
@@ -44,7 +54,7 @@ export async function signupAction(prevState: any, formData: FormData) {
     const email = validated.data.email.toLowerCase().trim();
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return { error: "An account with this email already exists." };
+      return { error: "We are unable to create this account" };
     }
 
     const hashedPassword = await bcrypt.hash(validated.data.password, 10);
@@ -78,6 +88,14 @@ export async function signupAction(prevState: any, formData: FormData) {
 
 export async function loginAction(prevState: any, formData: FormData) {
   try {
+    const headersList = await headers();
+    const ip = headersList.get("x-forwarded-for") ?? "127.0.0.1";
+    const { success: rateLimitSuccess } = await authRatelimit.limit(ip);
+    
+    if (!rateLimitSuccess) {
+      return { error: "Too many login attempts. Please try again later." };
+    }
+
     const rawEmail = formData.get("email") as string;
     const rawPassword = formData.get("password") as string;
 

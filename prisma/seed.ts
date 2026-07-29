@@ -76,6 +76,20 @@ async function main() {
       icon: 'Award',
       criteria: { type: 'perfect_scores_count', threshold: 50 },
     },
+    {
+      key: 'quiz_legend',
+      name: 'Quiz Legend',
+      description: 'Create 50 published quizzes.',
+      icon: 'Crown',
+      criteria: { type: 'quizzes_owned', threshold: 50 },
+    },
+    {
+      key: 'social_elite',
+      name: 'Social Elite',
+      description: 'Join 50 classroom quizzes created by others.',
+      icon: 'Users2',
+      criteria: { type: 'quizzes_joined_as_taker', threshold: 50 },
+    },
   ];
 
   for (const ach of achievements) {

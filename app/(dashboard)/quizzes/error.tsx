@@ -27,7 +27,7 @@ export default function QuizzesDashboardError({
             Something Went Wrong!
           </h1>
           <p className="text-sm font-semibold text-slate-800 leading-relaxed">
-            {error.message || "An unexpected database or server error occurred while loading your dashboard data."}
+            An unexpected error occurred while trying to load your dashboard data. Our engineers have been notified. Please try reloading the page.
           </p>
         </div>
 

@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { loginAction } from "@/app/actions/auth";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 
 
 export default function LoginPage() {
@@ -15,7 +15,7 @@ export default function LoginPage() {
     <div className="max-w-md mx-auto py-12">
       <div className="neo-box p-8 bg-white space-y-6">
         <div className="space-y-2 text-center">
-          <div className="inline-flex p-3 bg-amber-400 border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-xl">
+          <Link href="/" className="inline-flex p-3 bg-amber-400 border-3 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rounded-xl hover:-translate-y-1 transition-transform cursor-pointer">
             <Image 
               src="/mentatry_logo.png" 
               alt="Mentatry Logo" 
@@ -24,7 +24,7 @@ export default function LoginPage() {
               className="w-8 h-8 object-contain"
               priority
             />
-          </div>
+          </Link>
           <h1 className="text-3xl font-black uppercase tracking-tight">Welcome Back</h1>
           <p className="text-sm font-semibold text-slate-600">Sign in to manage and take your quizzes</p>
         </div>
@@ -72,9 +72,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="neo-btn neo-btn-pink w-full py-3 text-base mt-2"
+            className="neo-btn neo-btn-pink w-full py-3 text-base mt-2 flex items-center justify-center gap-2"
           >
-            {isPending ? "Signing In..." : "Sign In"}
+            {isPending && <Loader2 className="w-5 h-5 animate-spin shrink-0" />}
+            <span>{isPending ? "Signing In..." : "Sign In"}</span>
           </button>
         </form>
 

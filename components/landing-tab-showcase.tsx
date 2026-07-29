@@ -12,40 +12,40 @@ export function LandingTabShowcase() {
       <div className="flex items-center justify-center gap-1.5 md:gap-3 border-b-4 border-black pb-2">
         <button
           onClick={() => setActiveTab("ai")}
-          className={`px-3 md:px-5 py-2 md:py-3 font-extrabold text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
+          className={`px-2 sm:px-3 md:px-5 py-2 md:py-3 font-extrabold text-[10px] sm:text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
             activeTab === "ai"
               ? "bg-amber-300 text-black shadow-[3px_-3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
               : "bg-slate-800 text-slate-300 hover:bg-slate-700"
           }`}
         >
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" /> AI Generator
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> AI Generator
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab("join")}
-          className={`px-3 md:px-5 py-2 md:py-3 font-extrabold text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
+          className={`px-2 sm:px-3 md:px-5 py-2 md:py-3 font-extrabold text-[10px] sm:text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
             activeTab === "join"
               ? "bg-indigo-400 text-black shadow-[3px_-3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
               : "bg-slate-800 text-slate-300 hover:bg-slate-700"
           }`}
         >
-          <span className="flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5 md:w-4 md:h-4" /> Join Codes
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <KeyRound className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Join Codes
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab("insights")}
-          className={`px-3 md:px-5 py-2 md:py-3 font-extrabold text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
+          className={`px-2 sm:px-3 md:px-5 py-2 md:py-3 font-extrabold text-[10px] sm:text-[11px] md:text-base uppercase tracking-wider transition-all rounded-t-xl border-3 border-b-0 border-black ${
             activeTab === "insights"
               ? "bg-pink-400 text-black shadow-[3px_-3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
               : "bg-slate-800 text-slate-300 hover:bg-slate-700"
           }`}
         >
-          <span className="flex items-center gap-1.5">
-            <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" /> Analytics
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
+            <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Analytics
           </span>
         </button>
       </div>

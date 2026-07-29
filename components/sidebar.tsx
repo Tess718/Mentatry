@@ -43,7 +43,7 @@ export function Sidebar({
   return (
     <>
       {/* Mobile Top Bar Trigger (Visible on small screens) */}
-      <div className="lg:hidden fixed top-3 left-4 z-50">
+      <div className="lg:hidden fixed top-3 right-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="neo-btn neo-btn-white p-2.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
