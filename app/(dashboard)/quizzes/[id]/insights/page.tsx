@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation";
 import { CopyJoinCodeButton } from "@/components/copy-join-code-button";
 import Avatar from "@/components/ui/avatar";
 import { BarChart3, Users, Award, AlertTriangle, ArrowLeft, ShieldAlert } from "lucide-react";
+import { StudentAttemptsList } from "@/components/student-attempts-list";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,27 +20,17 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
   const userId = session.user.id;
   const { id: quizId } = await params;
 
-  const quiz = await prisma.quiz.findUnique({
+  const quizAuth = await prisma.quiz.findUnique({
     where: { id: quizId },
-    include: {
-      questions: {
-        orderBy: { order: "asc" },
-      },
-      attempts: {
-        include: {
-          user: { select: { email: true, firstName: true, lastName: true } },
-          answers: true,
-        },
-      },
-    },
+    select: { ownerId: true },
   });
 
-  if (!quiz) {
+  if (!quizAuth) {
     notFound();
   }
 
   // Authorization Check: Must be OWNER
-  const isOwner = quiz.ownerId === userId;
+  const isOwner = quizAuth.ownerId === userId;
   if (!isOwner) {
     return (
       <div className="max-w-md mx-auto py-12">
@@ -58,6 +49,30 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
       </div>
     );
   }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    include: {
+      questions: {
+        orderBy: { order: "asc" },
+      },
+      attempts: {
+        where: { roomId: null },
+        orderBy: { completedAt: 'desc' },
+        take: 50,
+        include: {
+          user: { select: { email: true, firstName: true, lastName: true } },
+          answers: true,
+        },
+      },
+    },
+  });
+
+  if (!quiz) {
+    notFound();
+  }
+
+
 
   // Aggregate Metrics Computation
   const totalAttempts = quiz.attempts.length;
@@ -117,7 +132,7 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
         </div>
         <h1 className="text-3xl font-black uppercase tracking-tight">{quiz.title}</h1>
         <p className="text-sm font-semibold text-slate-900">
-          Aggregate performance statistics across all student attempt records.
+          Aggregate performance statistics across all participant attempt records.
         </p>
       </div>
 
@@ -129,7 +144,7 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
             <Award className="w-5 h-5 text-yellow-600" />
           </div>
           <div className="text-3xl font-black text-black">{totalAttempts}</div>
-          <p className="text-xs font-semibold text-slate-600">{uniqueTakers} unique student takers</p>
+          <p className="text-xs font-semibold text-slate-600">{uniqueTakers} unique participants</p>
         </div>
 
         <div className="neo-box p-6 bg-white space-y-2">
@@ -151,7 +166,7 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
           <div className="text-2xl font-black text-black font-mono tracking-wider">
             {quiz.joinCode || "NONE"}
           </div>
-          <p className="text-xs font-semibold text-slate-600">Share code for student access</p>
+          <p className="text-xs font-semibold text-slate-600">Share code for participant access</p>
         </div>
       </div>
 
@@ -166,7 +181,7 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
 
         {totalAttempts === 0 ? (
           <div className="neo-box p-8 bg-white text-center text-slate-600 font-semibold italic">
-            No user attempts submitted yet. Share the join code to start collecting student performance insights.
+            No user attempts submitted yet. Share the join code to start collecting participant performance insights.
           </div>
         ) : (
           <div className="space-y-4">
@@ -224,38 +239,11 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Recent Student Attempts List */}
-      {totalAttempts > 0 && (
-        <div className="neo-box p-6 bg-white space-y-4">
-          <h3 className="text-xl font-black uppercase text-black">Recent Student Attempts</h3>
-          <div className="divide-y-2 divide-slate-100">
-            {quiz.attempts.map((att) => {
-              const name = att.user.firstName
-                ? `${att.user.firstName} ${att.user.lastName || ""}`
-                : att.user.email;
-
-              return (
-                <div key={att.id} className="py-3 flex items-center justify-between gap-4 text-sm font-semibold">
-                  <div className="flex items-center gap-3">
-                    <Avatar seed={att.user.email} size={36} />
-                    <div>
-                      <div className="font-extrabold text-black">{name}</div>
-                      <div className="text-xs text-slate-500">
-                        {new Date(att.completedAt).toLocaleDateString()} at{" "}
-                        {new Date(att.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="neo-badge bg-yellow-300 text-black">
-                    {att.score} / {quiz.questions.length} ({Math.round((att.score / quiz.questions.length) * 100)}%)
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Recent Participant Attempts List */}
+      <div className="pt-6 border-t-4 border-black space-y-6">
+        <h3 className="text-xl font-black uppercase text-black">Recent Attempts</h3>
+        <StudentAttemptsList attempts={quiz.attempts} questions={quiz.questions} />
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { checkAndAwardAchievements } from "@/lib/achievements";
 const MAX_JOIN_CODE_RETRIES = 5;
 
 /** Creates a live room for a given PUBLISHED quiz */
-export async function createRoomAction(quizId: string) {
+export async function createRoomAction(quizId: string, maxParticipants?: number) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized." };
   
@@ -23,6 +23,11 @@ export async function createRoomAction(quizId: string) {
     return { error: "Live rooms require a time limit. Please edit the quiz and set one before hosting." };
   }
 
+  let cap = maxParticipants !== undefined ? maxParticipants : 50;
+  if (Number.isNaN(cap)) cap = 50;
+  if (cap < 2) cap = 2;
+  if (cap > 200) cap = 200;
+
   // Retry joinCode generation in case of (unlikely) collision
   for (let attempt = 0; attempt < MAX_JOIN_CODE_RETRIES; attempt++) {
     const joinCode = generateJoinCode(6);
@@ -32,6 +37,7 @@ export async function createRoomAction(quizId: string) {
           quizId,
           hostId: session.user.id,
           joinCode,
+          maxParticipants: cap,
           status: "WAITING",
         },
       });
@@ -77,6 +83,17 @@ export async function joinRoomAction(joinCode: string) {
   if (room.status === "ACTIVE") return { error: "This room is already in progress. Late joining is not allowed." };
   if (room.quiz.status !== "PUBLISHED") return { error: "This quiz is not published." };
 
+  const existingParticipant = await prisma.roomParticipant.findUnique({
+    where: { roomId_userId: { roomId: room.id, userId } },
+  });
+
+  if (!existingParticipant) {
+    const currentCount = await prisma.roomParticipant.count({ where: { roomId: room.id } });
+    if (currentCount >= room.maxParticipants) {
+      return { error: "This room is full." };
+    }
+  }
+
   // Upsert participant in Postgres (authoritative)
   await prisma.roomParticipant.upsert({
     where: { roomId_userId: { roomId: room.id, userId } },
@@ -96,6 +113,17 @@ export async function joinAsPlayerAction(roomId: string) {
   const room = await prisma.room.findUnique({ where: { id: roomId } });
   if (!room) return { error: "Room not found." };
   if (room.hostId !== userId) return { error: "Only the host can use this action." };
+
+  const existingParticipant = await prisma.roomParticipant.findUnique({
+    where: { roomId_userId: { roomId, userId } },
+  });
+
+  if (!existingParticipant) {
+    const currentCount = await prisma.roomParticipant.count({ where: { roomId: room.id } });
+    if (currentCount >= room.maxParticipants) {
+      return { error: "This room is full." };
+    }
+  }
 
   await prisma.roomParticipant.upsert({
     where: { roomId_userId: { roomId, userId } },
@@ -144,7 +172,7 @@ export async function startRoomAction(roomId: string) {
 }
 
 /** Submit an incremental answer during a live room */
-export async function submitLiveAnswerAction(roomId: string, questionId: string, selectedOption: number) {
+export async function submitLiveAnswerAction(roomId: string, questionId: string, selectedOption: number, timeTakenMs?: number) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Unauthorized." };
 
@@ -170,7 +198,7 @@ export async function submitLiveAnswerAction(roomId: string, questionId: string,
 
   try {
     await prisma.roomAnswer.create({
-      data: { roomId, userId, questionId, selectedOption, submittedAt: new Date() },
+      data: { roomId, userId, questionId, selectedOption, timeTakenMs, submittedAt: new Date() },
     });
   } catch (error: any) {
     if (error.code === "P2002") {
@@ -246,6 +274,7 @@ export async function finalizeRoom(roomId: string) {
           questionId: q.id,
           selectedIndex: uAns.selectedOption,
           isCorrect,
+          timeTakenMs: uAns.timeTakenMs,
         });
       }
     }
@@ -255,6 +284,7 @@ export async function finalizeRoom(roomId: string) {
       data: {
         userId: participant.userId,
         quizId: quiz.id,
+        roomId: room.id,
         score,
         totalQuestions,
         completedAt: new Date(),

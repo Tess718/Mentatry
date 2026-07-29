@@ -9,6 +9,8 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
   const router = useRouter();
   const { showAlert, AlertModal } = useAlertModal();
   const [status, setStatus] = useState<string>("WAITING");
+  const [participantsCount, setParticipantsCount] = useState<number>(0);
+  const [maxParticipants, setMaxParticipants] = useState<number>(50);
 
   useEffect(() => {
     let interval = setInterval(async () => {
@@ -17,6 +19,8 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
         if (res.ok) {
           const data = await res.json();
           setStatus(data.status);
+          if (data.participants) setParticipantsCount(data.participants.length);
+          if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
 
           if (data.status === "ACTIVE") {
             clearInterval(interval);
@@ -24,7 +28,7 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
           } else if (data.status === "COMPLETED") {
             clearInterval(interval);
             if (data.userAttemptId) {
-              router.push(`/quizzes/${data.quizId || "..."}/results/${data.userAttemptId}`);
+              router.push(`/quizzes/${data.quizId}/results/${data.userAttemptId}`);
             } else {
               showAlert("The host ended this room.", () => {
                 router.push("/quizzes");
@@ -71,6 +75,9 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
           <p className="text-sm font-semibold text-slate-400">
             Your screen will automatically update when the quiz begins.
           </p>
+          <div className="inline-flex items-center justify-center bg-slate-100 border-2 border-slate-200 px-4 py-2 rounded-xl text-slate-600 font-bold">
+            <span className="text-black font-black text-xl mr-1">{participantsCount}</span> / {maxParticipants} Participants
+          </div>
         </div>
       )}
       <AlertModal />

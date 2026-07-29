@@ -32,6 +32,7 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
   const [lockedQuestions, setLockedQuestions] = useState<Record<string, boolean>>({});
   const [questionResults, setQuestionResults] = useState<Record<string, boolean>>({});
   const [liveStreak, setLiveStreak] = useState(0);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -83,6 +84,11 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
     };
   }, [roomId, startedAt, timeLimitMinutes, router]);
 
+  // Reset question timer when navigating to a new question
+  useEffect(() => {
+    setQuestionStartTime(Date.now());
+  }, [currentIndex]);
+
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const isLastQuestion = currentIndex === totalQuestions - 1;
@@ -95,8 +101,10 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
       [currentQuestion.id]: optionIndex,
     }));
 
+    const timeTakenMs = Date.now() - questionStartTime;
+
     startTransition(async () => {
-      const res = await submitLiveAnswerAction(roomId, currentQuestion.id, optionIndex);
+      const res = await submitLiveAnswerAction(roomId, currentQuestion.id, optionIndex, timeTakenMs);
       if (res.error) {
         showAlert(res.error);
         setIsLocked(true); // If rejected by server global timer, lock it

@@ -37,23 +37,14 @@ export async function checkAndAwardAchievements(userId: string) {
     where: { userId },
   });
 
-  // Aggregate: Perfect Scores (at least one)
-  const perfectScoreAttempts = await prisma.attempt.findFirst({
-    where: { 
-      userId, 
-      totalQuestions: { gt: 0 },
-      score: { equals: prisma.attempt.fields.totalQuestions } 
-    },
+  // Aggregate: Perfect Scores (fetch scores and total questions to compute in-memory)
+  const allAttempts = await prisma.attempt.findMany({
+    where: { userId, totalQuestions: { gt: 0 } },
+    select: { score: true, totalQuestions: true },
   });
 
-  // Aggregate: Perfect Scores (count)
-  const perfectScoresCount = await prisma.attempt.count({
-    where: { 
-      userId, 
-      totalQuestions: { gt: 0 },
-      score: { equals: prisma.attempt.fields.totalQuestions } 
-    },
-  });
+  const perfectScoresCount = allAttempts.filter(a => a.score === a.totalQuestions).length;
+  const perfectScoreAttempts = perfectScoresCount > 0;
 
   // Aggregate: Total Questions Answered
   const totalQuestionsAnswered = await prisma.attemptAnswer.count({
@@ -135,27 +126,16 @@ export async function checkAndAwardAchievements(userId: string) {
         if (quizzesJoinedCount >= (criteria.threshold || 3)) earned = true;
         break;
       case "speed_correct":
-        // Fallback evaluation for "Speed Demon":
-        // Since our database schema doesn't currently track the exact timestamp each individual question 
-        // is displayed to the users by the host, we can't reliably measure the time between "question shown" 
-        // and "answer submitted" for every question.
-        // As a temporary workaround, we measure speed on the FIRST question by comparing the answer's 
-        // submittedAt timestamp to the room's startedAt timestamp.
-        const fastFirstQuestion = await prisma.roomAnswer.findFirst({
-          where: { userId },
-          include: { room: true }
+        const fastAnswer = await prisma.attemptAnswer.findFirst({
+          where: { 
+            attempt: { userId }, 
+            isCorrect: true, 
+            timeTakenMs: { lte: criteria.maxSeconds * 1000 } 
+          }
         });
         
-        if (fastFirstQuestion && fastFirstQuestion.room.startedAt) {
-           const diff = fastFirstQuestion.submittedAt.getTime() - fastFirstQuestion.room.startedAt.getTime();
-           if (diff <= criteria.maxSeconds * 1000) {
-             // We still need to know if it's correct!
-             // We'd have to join Question.
-             const q = await prisma.question.findUnique({ where: { id: fastFirstQuestion.questionId }});
-             if (q && q.correctIndex === fastFirstQuestion.selectedOption) {
-                earned = true;
-             }
-           }
+        if (fastAnswer) {
+           earned = true;
         }
         break;
     }

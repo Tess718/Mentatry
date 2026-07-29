@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   ListOrdered,
   Trophy,
+  User,
+  Users,
 } from "lucide-react";
 import { LandingTabShowcase } from "@/components/landing-tab-showcase";
 import { LandingFAQ } from "@/components/landing-faq";
@@ -54,7 +56,7 @@ export default function HomePage() {
         </h1>
 
         <p className="text-base sm:text-xl font-bold text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Generate interactive multiple-choice quizzes from any topic or raw notes in seconds. Share via short join codes & track live student performance.
+          Generate interactive multiple-choice quizzes from any topic or raw notes in seconds. Share via short join codes & track live participant performance.
         </p>
 
         {/* Hero CTA Buttons */}
@@ -80,7 +82,7 @@ export default function HomePage() {
             </span>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
-            We provide powerful tools for both teachers and self-directed learners to test and monitor knowledge effortlessly.
+            We provide powerful tools for both creators and self-directed learners to test and monitor knowledge effortlessly.
           </p>
         </div>
 
@@ -134,7 +136,7 @@ export default function HomePage() {
                 Real-Time Insights
               </h3>
               <p className="text-black font-bold text-sm leading-relaxed">
-                Detailed score analytics, accuracy metrics, and question-by-question breakdowns to help you track student progress and identify study gaps.
+                Detailed score analytics, accuracy metrics, and question-by-question breakdowns to help you track participant progress and identify study gaps.
               </p>
             </div>
             <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
@@ -164,12 +166,66 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Section 1.5: "TWO WAYS TO PLAY" */}
+      <section className="space-y-10">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
+            TWO WAYS TO{" "}
+            <span className="stitched-tag stitched-tag-pink rotate-[2deg] inline-block">
+              PLAY
+            </span>
+          </h2>
+          <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
+            Whether you&apos;re studying alone or hosting a live classroom, we&apos;ve got the perfect flow for you.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Flow 1: Solo / Async */}
+          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] border-4 border-amber-400 flex flex-col h-full">
+            <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
+              <User className="w-8 h-8 text-black stroke-[2.5]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-black uppercase text-black mb-3">Solo Practice</h3>
+              <p className="text-slate-700 font-bold leading-relaxed text-sm">
+                Study at your own pace. Generate a quiz, take it instantly, and retake it as many times as you need. Perfect for personal revision, exam prep, and self-directed learning.
+              </p>
+            </div>
+            <div className="pt-4 border-t-2 border-slate-100">
+              <ul className="space-y-3 text-sm font-black uppercase tracking-wide text-slate-800">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-amber-500" /> Go at your own pace</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-amber-500" /> Unlimited retakes</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-amber-500" /> Post-quiz analytics</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Flow 2: Live Room */}
+          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(163,230,53,1)] border-4 border-lime-400 flex flex-col h-full">
+            <div className="w-16 h-16 bg-lime-400 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
+              <Users className="w-8 h-8 text-black stroke-[2.5]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-black uppercase text-black mb-3">Live Classrooms</h3>
+              <p className="text-slate-700 font-bold leading-relaxed text-sm">
+                Host a real-time multiplayer quiz. Participants join via a 6-character code and answer questions in sync. Perfect for classrooms, workshops, and team-building.
+              </p>
+            </div>
+            <div className="pt-4 border-t-2 border-slate-100">
+              <ul className="space-y-3 text-sm font-black uppercase tracking-wide text-slate-800">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Host controls the pace</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Live leaderboard & scoring</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Up to 200 players</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Section 2: "HOW IT WORKS" 4-Step Stepper */}
       <section className="space-y-10">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 bg-amber-300 text-black font-black text-xs uppercase px-3.5 py-1.5 rounded-md border-2 border-black">
-            <ListOrdered className="w-4 h-4 stroke-[3]" /> SIMPLE STEP-BY-STEP PROCESS
-          </div>
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             HOW MENTATRY{" "}
             <span className="stitched-tag stitched-tag-yellow rotate-[-1deg] inline-block">
@@ -211,7 +267,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-xl font-black uppercase text-black">Share Code</h3>
             <p className="text-xs font-bold text-slate-700 leading-relaxed">
-              Share the 6-character room code with students for one-click access on any device.
+              Share the 6-character room code with quiz takers for one-click access on any device.
             </p>
           </div>
 

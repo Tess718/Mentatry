@@ -87,6 +87,7 @@ model Attempt {
   id             String   @id @default(cuid())
   quizId         String
   userId         String
+  roomId         String?
   score          Int
   totalQuestions Int
   completedAt    DateTime @default(now())
@@ -105,6 +106,7 @@ model AttemptAnswer {
   questionId    String
   selectedIndex Int
   isCorrect     Boolean
+  timeTakenMs   Int?
 
   attempt  Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
@@ -114,14 +116,15 @@ model AttemptAnswer {
 }
 
 model Room {
-  id        String   @id @default(cuid())
-  quizId    String
-  hostId    String
-  status    String   @default("WAITING") // "WAITING" | "ACTIVE" | "COMPLETED"
-  joinCode  String   @unique
-  startedAt DateTime?
-  endedAt   DateTime?
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  quizId          String
+  hostId          String
+  status          String    @default("WAITING") // "WAITING" | "ACTIVE" | "COMPLETED"
+  joinCode        String    @unique
+  startedAt       DateTime?
+  endedAt         DateTime?
+  maxParticipants Int       @default(50)
+  createdAt       DateTime  @default(now())
 
   quiz         Quiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
   participants RoomParticipant[]
@@ -149,6 +152,7 @@ model RoomAnswer {
   userId         String
   questionId     String
   selectedOption Int
+  timeTakenMs    Int?
   submittedAt    DateTime @default(now())
 
   room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)

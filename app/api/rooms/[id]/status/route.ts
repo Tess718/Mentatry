@@ -53,6 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       startedAt: cachedState?.startedAt || room.startedAt?.toISOString() || null,
       createdAt: cachedState?.createdAt || room.createdAt.toISOString(),
       timeLimitMinutes: cachedState?.timeLimitMinutes || room.quiz.timeLimitMinutes,
+      maxParticipants: cachedState?.maxParticipants || room.maxParticipants,
       participants, // Always from Postgres
     };
 
@@ -64,6 +65,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           startedAt: state.startedAt,
           createdAt: state.createdAt,
           timeLimitMinutes: state.timeLimitMinutes,
+          maxParticipants: state.maxParticipants,
         });
         await redis.expire(`room:${roomId}`, 60 * 60 * 24);
       } catch (e) {
@@ -110,6 +112,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           startedAt: state.startedAt,
           createdAt: state.createdAt,
           timeLimitMinutes: state.timeLimitMinutes,
+          maxParticipants: state.maxParticipants,
         });
         await redis.expire(`room:${roomId}`, 60 * 60 * 24);
       } catch (e) {

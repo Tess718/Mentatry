@@ -16,6 +16,7 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
   const { showAlert, AlertModal } = useAlertModal();
   const [status, setStatus] = useState<string>("WAITING");
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [maxParticipants, setMaxParticipants] = useState<number>(50);
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
@@ -28,10 +29,16 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
           const data = await res.json();
           setStatus(data.status);
           setParticipants(data.participants || []);
+          if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
 
           // Stop polling on terminal states
           if (data.status === "COMPLETED" || data.status === "EXPIRED") {
             clearInterval(interval);
+            
+            // If the room completed elsewhere, redirect host to summary
+            if (data.status === "COMPLETED") {
+              router.push(`/rooms/${roomId}/summary`);
+            }
           }
         }
       } catch (err) {
@@ -61,7 +68,7 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
       if (res.error) {
         showAlert(res.error);
       } else {
-        router.push("/quizzes");
+        router.push(`/rooms/${roomId}/summary`);
       }
     });
   };
@@ -161,7 +168,7 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
                 Participants
               </h3>
               <span className="font-black text-lg bg-slate-100 px-3 py-1 rounded-lg border-2 border-slate-200">
-                {participants.length}
+                {participants.length} / {maxParticipants}
               </span>
             </div>
 
