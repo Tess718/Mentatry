@@ -4,7 +4,7 @@ import { useState } from "react";
 import Avatar from "@/components/ui/avatar";
 import { ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
 
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/prisma/generated/client";
 
 type AttemptWithDetails = Prisma.AttemptGetPayload<{
   include: {
