@@ -1,0 +1,184 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+
+  ownedQuizzes Quiz[]        @relation("QuizOwner")
+  quizAccess   QuizAccess[]
+  attempts     Attempt[]
+  roomParticipants RoomParticipant[]
+  roomAnswers  RoomAnswer[]
+  achievements UserAchievement[]
+}
+
+enum QuizSourceType {
+  TOPIC
+  TEXT
+  MANUAL
+}
+
+model Quiz {
+  id               String         @id @default(cuid())
+  ownerId          String
+  title            String
+  sourceType       QuizSourceType
+  sourceContent    String?        // topic string or pasted text; null for MANUAL
+  difficulty       String         // "easy" | "medium" | "hard"
+  status           String         @default("DRAFT") // "DRAFT" | "PUBLISHED"
+  timeLimitMinutes Int?           // null = no time limit; allowed: 5, 10, 15, 30, 60
+  joinCode         String?        @unique
+  createdAt        DateTime       @default(now())
+
+  owner     User          @relation("QuizOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  questions Question[]
+  access    QuizAccess[]
+  attempts  Attempt[]
+  rooms     Room[]
+
+  @@index([ownerId])
+}
+
+enum QuizRole {
+  OWNER
+  TAKER
+}
+
+model QuizAccess {
+  id     String   @id @default(cuid())
+  quizId String
+  userId String
+  role   QuizRole @default(TAKER)
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, userId])
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  quizId       String
+  text         String
+  options      String[] // exactly 4
+  correctIndex Int
+  explanation  String?
+  order        Int
+
+  quiz    Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers AttemptAnswer[]
+
+  @@index([quizId])
+}
+
+model Attempt {
+  id             String   @id @default(cuid())
+  quizId         String
+  userId         String
+  score          Int
+  totalQuestions Int
+  completedAt    DateTime @default(now())
+
+  quiz    Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers AttemptAnswer[]
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+model AttemptAnswer {
+  id            String  @id @default(cuid())
+  attemptId     String
+  questionId    String
+  selectedIndex Int
+  isCorrect     Boolean
+
+  attempt  Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
+  @@index([questionId])
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  quizId    String
+  hostId    String
+  status    String   @default("WAITING") // "WAITING" | "ACTIVE" | "COMPLETED"
+  joinCode  String   @unique
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime @default(now())
+
+  quiz         Quiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  participants RoomParticipant[]
+  answers      RoomAnswer[]
+
+  @@index([quizId])
+  @@index([hostId])
+}
+
+model RoomParticipant {
+  id       String   @id @default(cuid())
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model RoomAnswer {
+  id             String   @id @default(cuid())
+  roomId         String
+  userId         String
+  questionId     String
+  selectedOption Int
+  submittedAt    DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId, questionId])
+  @@index([roomId])
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  key         String @unique // e.g. "first_quiz", "streak_7", "perfect_score"
+  name        String
+  description String
+  icon        String // identifier matching the lucide-react icon set already in use
+  criteria    Json   // data-driven trigger condition
+
+  earnedBy UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+  acknowledged  Boolean  @default(false) // flips true once the unlock toast has been shown
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+

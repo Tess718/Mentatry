@@ -1,0 +1,437 @@
+"use server";
+
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { quizRatelimit } from "@/lib/ratelimit";
+import { generateQuizWithAI } from "@/lib/ai";
+import { generateJoinCode } from "@/lib/utils";
+import { redis } from "@/lib/redis";
+import { checkAndAwardAchievements } from "@/lib/achievements";
+import {
+  topicQuizInputSchema,
+  textQuizInputSchema,
+  manualQuizInputSchema,
+  joinCodeSchema,
+  ManualQuizInput,
+} from "@/lib/validations/quiz";
+
+export async function generateQuizAction(payload: {
+  sourceType: "TOPIC" | "TEXT";
+  topic?: string;
+  text?: string;
+  questionCount: number;
+  difficulty: "easy" | "medium" | "hard";
+  timeLimitMinutes?: number | null;
+  skipReview?: boolean;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+
+  // Validate form input
+  let sourceContent = "";
+  let validatedTimeLimit: number | null = null;
+
+  if (payload.sourceType === "TOPIC") {
+    const validated = topicQuizInputSchema.safeParse({
+      topic: payload.topic,
+      questionCount: payload.questionCount,
+      difficulty: payload.difficulty,
+      timeLimitMinutes: payload.timeLimitMinutes ?? 0,
+    });
+    if (!validated.success) {
+      return { error: validated.error.issues[0].message };
+    }
+    sourceContent = validated.data.topic;
+    validatedTimeLimit = validated.data.timeLimitMinutes ?? null;
+  } else {
+    const validated = textQuizInputSchema.safeParse({
+      text: payload.text,
+      questionCount: payload.questionCount,
+      difficulty: payload.difficulty,
+      timeLimitMinutes: payload.timeLimitMinutes ?? 0,
+    });
+    if (!validated.success) {
+      return { error: validated.error.issues[0].message };
+    }
+    sourceContent = validated.data.text;
+    validatedTimeLimit = validated.data.timeLimitMinutes ?? null;
+  }
+
+  // Rate Limiting Check
+  const rateLimitResult = await quizRatelimit.limit(userId);
+  if (!rateLimitResult.success) {
+    return {
+      error: "Rate limit exceeded. Please wait a few minutes before generating more quizzes.",
+    };
+  }
+
+  // Call Smart AI Generator (with double retry & Zod LLM validation)
+  const aiResult = await generateQuizWithAI({
+    sourceType: payload.sourceType,
+    sourceContent,
+    questionCount: payload.questionCount,
+    difficulty: payload.difficulty,
+  });
+
+  if (!aiResult.success || !aiResult.data) {
+    // Graceful fallback to manual creation prefilled with title/difficulty
+    const prefillTitle =
+      payload.sourceType === "TOPIC"
+        ? payload.topic || "My Custom Quiz"
+        : "Quiz from Pasted Text";
+
+    return {
+      success: false,
+      fallbackToManual: true,
+      error: "Couldn't generate a valid quiz with AI. You can build this quiz manually instead!",
+      prefill: {
+        title: prefillTitle,
+        difficulty: payload.difficulty,
+      },
+    };
+  }
+
+  const generatedQuiz = aiResult.data;
+  const joinCode = generateJoinCode(6);
+
+  // Database transaction: Create Quiz, Owner QuizAccess, and Question records
+  const quiz = await prisma.$transaction(async (tx) => {
+    const newQuiz = await tx.quiz.create({
+      data: {
+        ownerId: userId,
+        title: generatedQuiz.title,
+        sourceType: payload.sourceType,
+        sourceContent,
+        difficulty: payload.difficulty,
+        status: payload.skipReview ? "PUBLISHED" : "DRAFT",
+        timeLimitMinutes: validatedTimeLimit,
+        joinCode,
+      },
+    });
+
+    await tx.quizAccess.create({
+      data: {
+        quizId: newQuiz.id,
+        userId: userId,
+        role: "OWNER",
+      },
+    });
+
+    await tx.question.createMany({
+      data: generatedQuiz.questions.map((q, idx) => ({
+        quizId: newQuiz.id,
+        text: q.text,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation || null,
+        order: idx + 1,
+      })),
+    });
+
+    return newQuiz;
+  });
+
+  return { 
+    success: true, 
+    quizId: quiz.id, 
+    nextUrl: payload.skipReview ? `/quizzes/${quiz.id}/take` : `/quizzes/${quiz.id}/edit` 
+  };
+}
+
+export async function publishQuizAction(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized." };
+  }
+  
+  const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
+  if (!quiz) return { error: "Quiz not found." };
+  if (quiz.ownerId !== session.user.id) return { error: "Only the owner can publish this quiz." };
+  
+  await prisma.quiz.update({
+    where: { id: quizId },
+    data: { status: "PUBLISHED" },
+  });
+  
+  return { success: true };
+}
+
+export async function createManualQuizAction(payload: ManualQuizInput) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+  const validated = manualQuizInputSchema.safeParse(payload);
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message };
+  }
+
+  const joinCode = generateJoinCode(6);
+  const validatedTimeLimit = validated.data.timeLimitMinutes ?? null;
+
+  const quiz = await prisma.$transaction(async (tx) => {
+    const newQuiz = await tx.quiz.create({
+      data: {
+        ownerId: userId,
+        title: validated.data.title,
+        sourceType: "MANUAL",
+        sourceContent: null,
+        difficulty: validated.data.difficulty,
+        status: "DRAFT",
+        timeLimitMinutes: validatedTimeLimit,
+        joinCode,
+      },
+    });
+
+    await tx.quizAccess.create({
+      data: {
+        quizId: newQuiz.id,
+        userId: userId,
+        role: "OWNER",
+      },
+    });
+
+    await tx.question.createMany({
+      data: validated.data.questions.map((q, idx) => ({
+        quizId: newQuiz.id,
+        text: q.text,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation || null,
+        order: idx + 1,
+      })),
+    });
+
+    return newQuiz;
+  });
+
+  return { success: true, quizId: quiz.id };
+}
+
+export async function joinQuizByCodeAction(rawJoinCode: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+  const validated = joinCodeSchema.safeParse({ joinCode: rawJoinCode });
+  if (!validated.success) {
+    return { error: validated.error.issues[0].message };
+  }
+
+  const code = validated.data.joinCode;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { joinCode: code },
+  });
+
+  if (!quiz) {
+    return { error: "No quiz found with that join code. Please check and try again." };
+  }
+
+  if (quiz.status !== "PUBLISHED") {
+    return { error: "This quiz is still in draft mode and cannot be joined yet." };
+  }
+
+  // Check existing access
+  const existingAccess = await prisma.quizAccess.findUnique({
+    where: {
+      quizId_userId: {
+        quizId: quiz.id,
+        userId: userId,
+      },
+    },
+  });
+
+  if (!existingAccess) {
+    await prisma.quizAccess.create({
+      data: {
+        quizId: quiz.id,
+        userId: userId,
+        role: "TAKER",
+      },
+    });
+  }
+
+  return { success: true, quizId: quiz.id };
+}
+
+export async function submitAttemptAction(payload: {
+  quizId: string;
+  userAnswers: Record<string, number>; // questionId -> selectedIndex
+  startedAt?: string; // ISO timestamp of when the quiz was started client-side
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+  const { quizId, userAnswers } = payload;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    include: {
+      questions: {
+        orderBy: { order: "asc" },
+      },
+    },
+  });
+
+  if (!quiz) {
+    return { error: "Quiz not found." };
+  }
+
+  // Server-side time limit enforcement
+  if (quiz.timeLimitMinutes) {
+    let serverStartedAtMs: number | null = null;
+    if (redis) {
+      const cached = await redis.get(`solo:${userId}:${quizId}`);
+      if (cached) serverStartedAtMs = Number(cached);
+    }
+    
+    // Fallback to client timestamp if Redis is unavailable or expired
+    const startedAtMs = serverStartedAtMs || (payload.startedAt ? new Date(payload.startedAt).getTime() : Date.now());
+
+    const deadlineMs = startedAtMs + quiz.timeLimitMinutes * 60 * 1000;
+    const graceMs = 30 * 1000; // 30-second grace period for network latency
+    const now = Date.now();
+
+    if (now > deadlineMs + graceMs) {
+      return {
+        error: `Time's up! The ${quiz.timeLimitMinutes}-minute time limit has expired. Your answers were not recorded.`,
+      };
+    }
+
+    if (redis) {
+      await redis.del(`solo:${userId}:${quizId}`);
+    }
+  }
+
+  // Ensure access row exists
+  const access = await prisma.quizAccess.findUnique({
+    where: {
+      quizId_userId: {
+        quizId,
+        userId,
+      },
+    },
+  });
+
+  if (!access) {
+    await prisma.quizAccess.create({
+      data: {
+        quizId,
+        userId,
+        role: quiz.ownerId === userId ? "OWNER" : "TAKER",
+      },
+    });
+  }
+
+  // Server-side scoring computation: NEVER trust client-reported score!
+  let correctCount = 0;
+  const answerRecords: { questionId: string; selectedIndex: number; isCorrect: boolean }[] = [];
+
+  for (const question of quiz.questions) {
+    const selectedIndex = userAnswers[question.id] ?? -1;
+    const isCorrect = selectedIndex === question.correctIndex;
+    if (isCorrect) {
+      correctCount++;
+    }
+    answerRecords.push({
+      questionId: question.id,
+      selectedIndex,
+      isCorrect,
+    });
+  }
+
+  // Save Attempt and AttemptAnswer records
+  const attempt = await prisma.$transaction(async (tx) => {
+    const newAttempt = await tx.attempt.create({
+      data: {
+        quizId,
+        userId,
+        score: correctCount,
+        totalQuestions: quiz.questions.length,
+      },
+    });
+
+    await tx.attemptAnswer.createMany({
+      data: answerRecords.map((a) => ({
+        attemptId: newAttempt.id,
+        questionId: a.questionId,
+        selectedIndex: a.selectedIndex,
+        isCorrect: a.isCorrect,
+      })),
+    });
+
+    return newAttempt;
+  });
+
+  // Check and award achievements asynchronously
+  try {
+    await checkAndAwardAchievements(userId);
+  } catch (err) {
+    console.error("Failed to award achievements for user", userId, err);
+  }
+
+  return { success: true, attemptId: attempt.id };
+}
+
+export async function regenerateJoinCodeAction(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized." };
+  }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+  });
+
+  if (!quiz || quiz.ownerId !== session.user.id) {
+    return { error: "Only the quiz owner can regenerate join codes." };
+  }
+
+  const newJoinCode = generateJoinCode(6);
+  await prisma.quiz.update({
+    where: { id: quizId },
+    data: { joinCode: newJoinCode },
+  });
+
+  return { success: true, joinCode: newJoinCode };
+}
+
+export async function deleteQuizAction(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+  });
+
+  if (!quiz) {
+    return { error: "Quiz not found." };
+  }
+
+  if (quiz.ownerId !== userId) {
+    return { error: "Only the quiz owner can delete this quiz." };
+  }
+
+  // Delete quiz (Prisma cascade relations will clean up questions, attempts, answers, and access records)
+  await prisma.quiz.delete({
+    where: { id: quizId },
+  });
+
+  return { success: true };
+}
