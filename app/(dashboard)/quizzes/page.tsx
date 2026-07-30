@@ -81,7 +81,7 @@ export default async function QuizzesDashboardPage() {
   return (
     <div className="space-y-8 py-4">
       {/* Dashboard Top Hero Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 neo-box p-6 sm:p-8 bg-amber-300 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 neo-box p-6 sm:p-8 bg-amber-300 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black">
         <div className="space-y-2">
           <h1 className="text-3xl sm:text-4xl font-black uppercase text-black tracking-tight leading-tight">
             WELCOME BACK, {userFirstName}!

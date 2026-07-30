@@ -18,21 +18,32 @@ interface QuizTakerProps {
   difficulty: string;
   timeLimitMinutes: number | null;
   questions: QuestionData[];
+  resumeWarning?: string;
 }
 
-export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, questions }: QuizTakerProps) {
+export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, questions, resumeWarning }: QuizTakerProps) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const startedAtRef = useRef<string | null>(null);
+  const attemptIdRef = useRef<string | null>(null);
   const autoSubmittedRef = useRef(false);
 
   useEffect(() => {
+    // Initialize attempt on mount
+    fetch(`/api/quizzes/${quizId}/start`, { method: "POST" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.attemptId) {
+          attemptIdRef.current = data.attemptId;
+        }
+      })
+      .catch((err) => console.error("Failed to start quiz:", err));
+
     if (!timeLimitMinutes) return;
 
     // Initialize timer on mount
@@ -89,6 +100,7 @@ export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, que
         quizId,
         userAnswers,
         startedAt: startedAtRef.current || undefined,
+        attemptId: attemptIdRef.current || undefined,
       });
 
       if (res.error) {
@@ -158,6 +170,13 @@ export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, que
         <div className="neo-box bg-pink-100 border-red-600 p-4 text-red-700 text-sm font-bold flex items-center gap-2">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {resumeWarning && (
+        <div className="neo-box bg-orange-100 border-orange-500 p-4 text-orange-800 text-sm font-bold flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{resumeWarning}</span>
         </div>
       )}
 

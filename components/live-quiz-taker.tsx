@@ -48,10 +48,10 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
             clearInterval(pollInterval);
             setIsLocked(true);
             if (data.userAttemptId) {
-              router.push(`/quizzes/${data.quizId || "..."}/results/${data.userAttemptId}`);
+              router.push(`/rooms/${roomId}/leaderboard`);
             } else {
               showAlert("The host has ended the quiz.", () => {
-                router.push("/quizzes");
+                router.push(`/rooms/${roomId}/leaderboard`);
               });
             }
           }

@@ -28,10 +28,10 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
           } else if (data.status === "COMPLETED") {
             clearInterval(interval);
             if (data.userAttemptId) {
-              router.push(`/quizzes/${data.quizId}/results/${data.userAttemptId}`);
+              router.push(`/rooms/${roomId}/leaderboard`);
             } else {
               showAlert("The host ended this room.", () => {
-                router.push("/quizzes");
+                router.push(`/rooms/${roomId}/leaderboard`);
               });
             }
           } else if (data.status === "EXPIRED") {

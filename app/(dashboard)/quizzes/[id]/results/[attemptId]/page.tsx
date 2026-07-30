@@ -7,15 +7,17 @@ import { AchievementToast } from "@/components/achievement-toast";
 
 interface PageProps {
   params: Promise<{ id: string; attemptId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function QuizResultsPage({ params }: PageProps) {
+export default async function QuizResultsPage({ params, searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }
 
   const { id: quizId, attemptId } = await params;
+  const { from, roomId: queryRoomId } = await searchParams;
 
   const attempt = await prisma.attempt.findUnique({
     where: { id: attemptId },
@@ -64,7 +66,10 @@ export default async function QuizResultsPage({ params }: PageProps) {
   let backLink = "/quizzes";
   let backText = "Back to My Quizzes";
 
-  if (!isTaker && isOwner) {
+  if (from === "leaderboard" && queryRoomId) {
+    backLink = `/rooms/${queryRoomId}/leaderboard`;
+    backText = "Back to Leaderboard";
+  } else if (!isTaker && isOwner) {
     if (attempt.roomId) {
       backLink = `/rooms/${attempt.roomId}/summary`;
       backText = "Back to Room Summary";
@@ -84,15 +89,40 @@ export default async function QuizResultsPage({ params }: PageProps) {
       {/* Score Header Card */}
       <div className="neo-box p-8 bg-yellow-300 text-black flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-2 neo-badge bg-black text-white px-3 py-1 text-xs">
-            <Trophy className="w-4 h-4 text-yellow-400" /> Score Breakdown
+          <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start mb-1">
+            <div className="inline-flex items-center gap-2 neo-badge bg-black text-white px-3 py-1 text-xs">
+              <Trophy className="w-4 h-4 text-yellow-400" /> Score Breakdown
+            </div>
+            {quiz.isDailyQuiz && (
+              attempt.isFirstDailyAttempt ? (
+                <div className="inline-flex items-center gap-2 neo-badge bg-lime-400 text-black px-3 py-1 text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <CheckCircle className="w-4 h-4" /> Official Daily Attempt
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 neo-badge bg-slate-200 text-slate-800 px-3 py-1 text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  Practice Attempt
+                </div>
+              )
+            )}
           </div>
+          
           <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight">{quiz.title}</h1>
           <p className="text-sm font-bold text-slate-900">
             {!isTaker && <span className="mr-2 text-indigo-700">Participant: {takerName} •</span>}
-            Completed on {new Date(attempt.completedAt).toLocaleDateString()} at{" "}
-            {new Date(attempt.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            Completed on {new Date(attempt.completedAt!).toLocaleDateString()} at{" "}
+            {new Date(attempt.completedAt!).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </p>
+
+          {quiz.isDailyQuiz && attempt.isFirstDailyAttempt && (
+            <p className="text-xs font-black bg-white/50 inline-block px-2 py-1 mt-2 text-amber-900 rounded">
+              Final rankings are calculated after the day ends.
+            </p>
+          )}
+          {quiz.isDailyQuiz && !attempt.isFirstDailyAttempt && (
+            <p className="text-xs font-black bg-white/50 inline-block px-2 py-1 mt-2 text-slate-700 rounded">
+              This attempt won't affect your leaderboard ranking.
+            </p>
+          )}
         </div>
 
         {/* Score Circle Badge */}

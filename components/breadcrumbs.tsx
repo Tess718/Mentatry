@@ -25,9 +25,6 @@ function BreadcrumbsContent() {
     if (segment === "insights") return "Insights";
     if (segment === "results") return "Results";
     
-    // If it looks like a CUID/UUID (long alphanumeric), it's probably an ID
-    if (segment.length >= 20) return "Quiz Details";
-    
     // Capitalize first letter
     return segment.charAt(0).toUpperCase() + segment.slice(1);
   };
@@ -51,6 +48,8 @@ function BreadcrumbsContent() {
       crumbs.push({ label: "Insights", href: `/quizzes/${quizId}/insights` });
     } else if (from === "room" && roomId) {
       crumbs.push({ label: "Room Summary", href: `/rooms/${roomId}/summary` });
+    } else if (from === "leaderboard" && roomId) {
+      crumbs.push({ label: "Leaderboard", href: `/rooms/${roomId}/leaderboard` });
     }
     
     if (resultsCrumb) {

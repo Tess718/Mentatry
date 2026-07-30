@@ -46,14 +46,14 @@ export default async function AchievementsPage() {
 
   // 3. Compute Daily Streak live
   const attemptsDates = await prisma.attempt.findMany({
-    where: { userId },
+    where: { userId, completedAt: { not: null } },
     select: { completedAt: true },
     orderBy: { completedAt: "desc" },
   });
 
   const distinctDays = new Set(
     attemptsDates.map((a) => {
-      const d = new Date(a.completedAt);
+      const d = new Date(a.completedAt!);
       return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     })
   );

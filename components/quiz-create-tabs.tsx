@@ -186,7 +186,11 @@ export function QuizCreateTabs() {
           setErrorMsg(res.error);
         }
       } else if (res.quizId) {
-        router.push(`/quizzes/${res.quizId}/edit`);
+        if (topicSkipReview) {
+          router.push(`/quizzes/${res.quizId}/take`);
+        } else {
+          router.push(`/quizzes/${res.quizId}/edit`);
+        }
       }
     });
   };
@@ -216,7 +220,11 @@ export function QuizCreateTabs() {
           setErrorMsg(res.error);
         }
       } else if (res.quizId) {
-        router.push(`/quizzes/${res.quizId}/edit`);
+        if (textSkipReview) {
+          router.push(`/quizzes/${res.quizId}/take`);
+        } else {
+          router.push(`/quizzes/${res.quizId}/edit`);
+        }
       }
     });
   };

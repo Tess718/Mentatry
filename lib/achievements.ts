@@ -53,7 +53,7 @@ export async function checkAndAwardAchievements(userId: string) {
 
   // Aggregate: Daily Streak (count unique calendar days of attempts)
   const attemptsDates = await prisma.attempt.findMany({
-    where: { userId },
+    where: { userId, completedAt: { not: null } },
     select: { completedAt: true },
     orderBy: { completedAt: "desc" },
   });
@@ -61,7 +61,7 @@ export async function checkAndAwardAchievements(userId: string) {
   // Calculate distinct calendar days (local time approximation via JS Date string manipulation)
   const distinctDays = new Set(
     attemptsDates.map((a) => {
-      const d = new Date(a.completedAt);
+      const d = new Date(a.completedAt!);
       return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
     })
   );

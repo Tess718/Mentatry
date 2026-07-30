@@ -61,8 +61,14 @@ export function StudentAttemptsList({ attempts, questions }: StudentAttemptsList
                 <div>
                   <div className="font-extrabold text-black text-base">{name}</div>
                   <div className="text-xs font-semibold text-slate-500">
-                    {new Date(att.completedAt).toLocaleDateString()} at{" "}
-                    {new Date(att.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {att.completedAt ? (
+                      <>
+                        {new Date(att.completedAt).toLocaleDateString()} at{" "}
+                        {new Date(att.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </>
+                    ) : (
+                      "Incomplete"
+                    )}
                   </div>
                 </div>
               </div>

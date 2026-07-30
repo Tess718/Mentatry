@@ -22,6 +22,7 @@ model User {
   roomParticipants RoomParticipant[]
   roomAnswers  RoomAnswer[]
   achievements UserAchievement[]
+  dailyLeaderboardResults DailyLeaderboardResult[]
 }
 
 enum QuizSourceType {
@@ -40,6 +41,8 @@ model Quiz {
   status           String         @default("DRAFT") // "DRAFT" | "PUBLISHED"
   timeLimitMinutes Int?           // null = no time limit; allowed: 5, 10, 15, 30, 60
   joinCode         String?        @unique
+  isDailyQuiz      Boolean        @default(false)
+  dailyDate        DateTime?      @unique
   createdAt        DateTime       @default(now())
 
   owner     User          @relation("QuizOwner", fields: [ownerId], references: [id], onDelete: Cascade)
@@ -47,6 +50,7 @@ model Quiz {
   access    QuizAccess[]
   attempts  Attempt[]
   rooms     Room[]
+  dailyLeaderboardResults DailyLeaderboardResult[]
 
   @@index([ownerId])
 }
@@ -84,17 +88,21 @@ model Question {
 }
 
 model Attempt {
-  id             String   @id @default(cuid())
-  quizId         String
-  userId         String
-  roomId         String?
-  score          Int
-  totalQuestions Int
-  completedAt    DateTime @default(now())
+  id                  String   @id @default(cuid())
+  quizId              String
+  userId              String
+  roomId              String?
+  score               Int      @default(0)
+  totalQuestions      Int
+  startedAt           DateTime @default(now())
+  completedAt         DateTime?
+  totalTimeMs         Int?
+  isFirstDailyAttempt Boolean  @default(false)
 
   quiz    Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
   user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   answers AttemptAnswer[]
+  dailyLeaderboardResult DailyLeaderboardResult?
 
   @@index([quizId])
   @@index([userId])
@@ -183,6 +191,27 @@ model UserAchievement {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, achievementId])
+}
+
+model DailyLeaderboardResult {
+  id                String   @id @default(cuid())
+  userId            String
+  quizId            String
+  attemptId         String   @unique
+  date              DateTime
+  rank              Int
+  percentile        Float
+  score             Int
+  totalTimeMs       Int
+  totalParticipants Int
+  createdAt         DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz    Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  attempt Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, userId])
+  @@index([date])
+  @@index([userId, date(sort: Desc)])
 }
 

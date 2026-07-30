@@ -36,6 +36,20 @@ export default async function TakeQuizPage({ params }: PageProps) {
     order: q.order,
   }));
 
+  let resumeWarning = "";
+  if (quiz.isDailyQuiz) {
+    const existingIncomplete = await prisma.attempt.findFirst({
+      where: {
+        userId: session.user.id,
+        quizId: quiz.id,
+        completedAt: null,
+      },
+    });
+    if (existingIncomplete) {
+      resumeWarning = "You started today's quiz earlier. Your timer is still running! Submit to record your official attempt.";
+    }
+  }
+
   // Track start time securely on the server
   if (quiz.timeLimitMinutes && redis) {
     const key = `solo:${session.user.id}:${quiz.id}`;
@@ -51,6 +65,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
         difficulty={quiz.difficulty}
         timeLimitMinutes={quiz.timeLimitMinutes}
         questions={sanitizedQuestions}
+        resumeWarning={resumeWarning}
       />
     </div>
   );

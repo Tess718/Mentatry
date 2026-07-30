@@ -267,6 +267,7 @@ export async function submitAttemptAction(payload: {
   quizId: string;
   userAnswers: Record<string, number>; // questionId -> selectedIndex
   startedAt?: string; // ISO timestamp of when the quiz was started client-side
+  attemptId?: string; // Optional ID for pre-started attempts (Daily Quiz)
 }) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -354,25 +355,50 @@ export async function submitAttemptAction(payload: {
 
   // Save Attempt and AttemptAnswer records
   const attempt = await prisma.$transaction(async (tx) => {
-    const newAttempt = await tx.attempt.create({
-      data: {
-        quizId,
-        userId,
-        score: correctCount,
-        totalQuestions: quiz.questions.length,
-      },
-    });
+    let targetAttemptId: string;
+    
+    if (payload.attemptId) {
+      const existing = await tx.attempt.findUnique({
+        where: { id: payload.attemptId }
+      });
+      if (!existing || existing.userId !== userId || existing.quizId !== quizId || existing.completedAt) {
+        throw new Error("Invalid or already completed attempt.");
+      }
+      targetAttemptId = existing.id;
+      const totalTimeMs = Math.max(0, Date.now() - existing.startedAt.getTime());
+      
+      await tx.attempt.update({
+        where: { id: targetAttemptId },
+        data: {
+          score: correctCount,
+          totalQuestions: quiz.questions.length,
+          completedAt: new Date(),
+          totalTimeMs
+        }
+      });
+    } else {
+      const newAttempt = await tx.attempt.create({
+        data: {
+          quizId,
+          userId,
+          score: correctCount,
+          totalQuestions: quiz.questions.length,
+          completedAt: new Date(),
+        },
+      });
+      targetAttemptId = newAttempt.id;
+    }
 
     await tx.attemptAnswer.createMany({
       data: answerRecords.map((a) => ({
-        attemptId: newAttempt.id,
+        attemptId: targetAttemptId,
         questionId: a.questionId,
         selectedIndex: a.selectedIndex,
         isCorrect: a.isCorrect,
       })),
     });
 
-    return newAttempt;
+    return { id: targetAttemptId };
   });
 
   // Check and award achievements asynchronously
