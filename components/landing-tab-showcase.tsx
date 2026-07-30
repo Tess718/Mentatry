@@ -1,10 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, KeyRound, BarChart3, CheckCircle2, ArrowUpRight, Zap, Users, ShieldCheck } from "lucide-react";
+import {
+  Sparkles,
+  KeyRound,
+  BarChart3,
+  CheckCircle2,
+  ArrowUpRight,
+  Zap,
+  Users,
+  ShieldCheck,
+} from "lucide-react";
 
 export function LandingTabShowcase() {
-  const [activeTab, setActiveTab] = useState<"ai" | "join" | "insights">("join");
+  const [activeTab, setActiveTab] = useState<"ai" | "join" | "insights">(
+    "join",
+  );
 
   return (
     <div className="space-y-6">
@@ -19,7 +30,8 @@ export function LandingTabShowcase() {
           }`}
         >
           <span className="flex items-center gap-1.5 whitespace-nowrap">
-            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> AI Generator
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> AI
+            Generator
           </span>
         </button>
 
@@ -32,7 +44,8 @@ export function LandingTabShowcase() {
           }`}
         >
           <span className="flex items-center gap-1.5 whitespace-nowrap">
-            <KeyRound className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Join Codes
+            <KeyRound className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Join
+            Codes
           </span>
         </button>
 
@@ -45,17 +58,19 @@ export function LandingTabShowcase() {
           }`}
         >
           <span className="flex items-center gap-1.5 whitespace-nowrap">
-            <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> Analytics
+            <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />{" "}
+            Analytics
           </span>
         </button>
       </div>
 
       {/* Main Tab Content Card */}
-      <div className="relative border-4 border-black bg-amber-300 rounded-3xl p-6 sm:p-10 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+      <div className="relative border-4 border-black bg-amber-300 rounded-3xl p-6 sm:p-10 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden max-sm:overflow-visible">
         {/* Floating "TOTALLY FREE!" Tag Badge */}
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 rotate-6 z-10">
+        <div className="absolute top-0 right-0 sm:top-6 sm:right-6 rotate-6 z-10">
           <div className="bg-pink-500 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-3 py-1.5 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1">
-            <Zap className="w-4 h-4 fill-yellow-300 text-yellow-300" /> TOTALLY FREE!
+            <Zap className="w-4 h-4 fill-yellow-300 text-yellow-300" /> TOTALLY
+            FREE!
           </div>
         </div>
 
@@ -80,15 +95,19 @@ export function LandingTabShowcase() {
             <ul className="space-y-2 pt-2 text-slate-900 font-black text-xs sm:text-sm">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-black fill-lime-400" />
-                {activeTab === "ai" && "Instant 4-option multiple choice generation"}
+                {activeTab === "ai" &&
+                  "Instant 4-option multiple choice generation"}
                 {activeTab === "join" && "Short 6-character unique room codes"}
-                {activeTab === "insights" && "Automated instant grading & explanations"}
+                {activeTab === "insights" &&
+                  "Automated instant grading & explanations"}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-black fill-lime-400" />
-                {activeTab === "ai" && "Customize or build questions manually anytime"}
+                {activeTab === "ai" &&
+                  "Customize or build questions manually anytime"}
                 {activeTab === "join" && "Supports mobile, tablet, and desktop"}
-                {activeTab === "insights" && "Track class accuracy & top-performing students"}
+                {activeTab === "insights" &&
+                  "Track class accuracy & top-performing students"}
               </li>
             </ul>
           </div>
@@ -107,7 +126,11 @@ export function LandingTabShowcase() {
                   </span>
                 </div>
                 <div className="bg-slate-100 border border-slate-300 text-slate-700 text-[10px] font-mono px-2 py-0.5 rounded font-bold">
-                  {activeTab === "ai" ? "AI GENERATED" : activeTab === "join" ? "CODE: 884-912" : "ANALYTICS"}
+                  {activeTab === "ai"
+                    ? "AI GENERATED"
+                    : activeTab === "join"
+                      ? "CODE: 884-912"
+                      : "ANALYTICS"}
                 </div>
               </div>
 
@@ -125,7 +148,9 @@ export function LandingTabShowcase() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="p-2.5 border-2 border-black rounded-lg bg-emerald-100 font-bold text-xs flex items-center justify-between">
                       <span>A) Mitochondria</span>
-                      <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded font-black">Correct</span>
+                      <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded font-black">
+                        Correct
+                      </span>
                     </div>
                     <div className="p-2.5 border-2 border-slate-300 rounded-lg bg-slate-50 font-bold text-xs text-slate-500">
                       B) Ribosome
@@ -171,21 +196,29 @@ export function LandingTabShowcase() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-2">
                     <div className="bg-cyan-100 border-2 border-black p-2.5 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-cyan-900 uppercase">Avg Score</span>
+                      <span className="text-[10px] font-black text-cyan-900 uppercase">
+                        Avg Score
+                      </span>
                       <div className="text-xl font-black text-black">88%</div>
                     </div>
                     <div className="bg-lime-100 border-2 border-black p-2.5 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-lime-900 uppercase">Attempts</span>
+                      <span className="text-[10px] font-black text-lime-900 uppercase">
+                        Attempts
+                      </span>
                       <div className="text-xl font-black text-black">124</div>
                     </div>
                     <div className="bg-pink-100 border-2 border-black p-2.5 rounded-xl text-center">
-                      <span className="text-[10px] font-black text-pink-900 uppercase">Pass Rate</span>
+                      <span className="text-[10px] font-black text-pink-900 uppercase">
+                        Pass Rate
+                      </span>
                       <div className="text-xl font-black text-black">94%</div>
                     </div>
                   </div>
                   <div className="border-2 border-black bg-slate-900 text-white p-3 rounded-xl font-mono text-xs flex items-center justify-between">
                     <span className="text-lime-400">#1 Top Student</span>
-                    <span className="font-bold text-yellow-300">Teslim L. (10/10)</span>
+                    <span className="font-bold text-yellow-300">
+                      Teslim L. (10/10)
+                    </span>
                   </div>
                 </div>
               )}
