@@ -16,6 +16,7 @@ import {
   Trophy,
   User,
   Users,
+  Timer,
 } from "lucide-react";
 import { LandingTabShowcase } from "@/components/landing-tab-showcase";
 import { LandingFAQ } from "@/components/landing-faq";
@@ -166,21 +167,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 1.5: "TWO WAYS TO PLAY" */}
+      {/* Section 1.5: "THREE WAYS TO PLAY" */}
       <section className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
-            TWO WAYS TO{" "}
+            THREE WAYS TO{" "}
             <span className="stitched-tag stitched-tag-pink rotate-[2deg] inline-block">
               PLAY
             </span>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
-            Whether you&apos;re studying alone or hosting a live classroom, we&apos;ve got the perfect flow for you.
+            Whether you&apos;re studying alone, hosting a live classroom, or competing globally.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Flow 1: Solo / Async */}
           <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] border-4 border-amber-400 flex flex-col h-full">
             <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
@@ -217,6 +218,26 @@ export default function HomePage() {
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Host controls the pace</li>
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Live leaderboard & scoring</li>
                 <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-lime-600" /> Up to 200 players</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Flow 3: Daily Challenge */}
+          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(34,211,238,1)] border-4 border-cyan-400 flex flex-col h-full">
+            <div className="w-16 h-16 bg-cyan-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
+              <Timer className="w-8 h-8 text-black stroke-[2.5]" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-black uppercase text-black mb-3">Daily Challenge</h3>
+              <p className="text-slate-700 font-bold leading-relaxed text-sm">
+                Compete against the world in a fresh, AI-generated quiz every single day. Only your first attempt counts. Rank up on the global midnight leaderboard!
+              </p>
+            </div>
+            <div className="pt-4 border-t-2 border-slate-100">
+              <ul className="space-y-3 text-sm font-black uppercase tracking-wide text-slate-800">
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-cyan-600" /> New quiz every 24 hours</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-cyan-600" /> Global midnight rankings</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-cyan-600" /> Tie-breakers on speed</li>
               </ul>
             </div>
           </div>
