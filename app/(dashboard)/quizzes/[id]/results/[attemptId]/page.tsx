@@ -27,6 +27,9 @@ export default async function QuizResultsPage({ params }: PageProps) {
           },
         },
       },
+      user: {
+        select: { firstName: true, email: true }
+      },
       answers: true,
     },
   });
@@ -35,8 +38,41 @@ export default async function QuizResultsPage({ params }: PageProps) {
     notFound();
   }
 
+  const isTaker = attempt.userId === session.user.id;
+  const isOwner = attempt.quiz.ownerId === session.user.id;
+
+  if (!isTaker && !isOwner) {
+    return (
+      <div className="max-w-md mx-auto py-12">
+        <div className="neo-box p-8 bg-pink-100 border-red-600 text-center space-y-4">
+          <h1 className="text-2xl font-black uppercase text-red-700">Access Denied</h1>
+          <p className="text-sm font-semibold text-slate-800">
+            You do not have permission to view this attempt record.
+          </p>
+          <Link href="/quizzes" className="neo-btn neo-btn-black text-xs py-2 px-4 inline-block">
+            Return to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const quiz = attempt.quiz;
   const percentage = Math.round((attempt.score / attempt.totalQuestions) * 100);
+  const takerName = attempt.user.firstName || attempt.user.email.split("@")[0];
+
+  let backLink = "/quizzes";
+  let backText = "Back to My Quizzes";
+
+  if (!isTaker && isOwner) {
+    if (attempt.roomId) {
+      backLink = `/rooms/${attempt.roomId}/summary`;
+      backText = "Back to Room Summary";
+    } else {
+      backLink = `/quizzes/${quizId}/insights`;
+      backText = "Back to Insights";
+    }
+  }
 
   // Map answers by questionId for fast lookup
   const answersMap = new Map(attempt.answers.map((a) => [a.questionId, a]));
@@ -53,6 +89,7 @@ export default async function QuizResultsPage({ params }: PageProps) {
           </div>
           <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight">{quiz.title}</h1>
           <p className="text-sm font-bold text-slate-900">
+            {!isTaker && <span className="mr-2 text-indigo-700">Participant: {takerName} •</span>}
             Completed on {new Date(attempt.completedAt).toLocaleDateString()} at{" "}
             {new Date(attempt.completedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </p>
@@ -60,7 +97,7 @@ export default async function QuizResultsPage({ params }: PageProps) {
 
         {/* Score Circle Badge */}
         <div className="neo-box bg-white p-6 text-center shrink-0 min-w-44 space-y-1">
-          <div className="text-xs font-black uppercase text-slate-500">Your Score</div>
+          <div className="text-xs font-black uppercase text-slate-500">{isTaker ? "Your Score" : "Score"}</div>
           <div className="text-4xl font-black text-black">
             {attempt.score} <span className="text-xl text-slate-500 font-bold">/ {attempt.totalQuestions}</span>
           </div>
@@ -72,15 +109,17 @@ export default async function QuizResultsPage({ params }: PageProps) {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <Link href="/quizzes" className="neo-btn neo-btn-white text-sm">
+        <Link href={backLink} className="neo-btn neo-btn-white text-sm">
           <LayoutDashboard className="w-4 h-4 stroke-[3]" />
-          <span>Back to My Quizzes</span>
+          <span>{backText}</span>
         </Link>
 
-        <Link href={`/quizzes/${quizId}/take`} className="neo-btn neo-btn-lime text-sm">
-          <RotateCcw className="w-4 h-4 stroke-[3]" />
-          <span>Retake Quiz</span>
-        </Link>
+        {isTaker && (
+          <Link href={`/quizzes/${quizId}/take`} className="neo-btn neo-btn-lime text-sm">
+            <RotateCcw className="w-4 h-4 stroke-[3]" />
+            <span>Retake Quiz</span>
+          </Link>
+        )}
       </div>
 
       {/* Per-Question Detailed Review */}
@@ -142,7 +181,7 @@ export default async function QuizResultsPage({ params }: PageProps) {
                         <span>{optText}</span>
                         {isSelected && (
                           <span className="ml-2 text-[10px] uppercase font-black px-1.5 py-0.5 bg-black text-white inline-block">
-                            Your Pick
+                            {isTaker ? "Your Pick" : "Their Pick"}
                           </span>
                         )}
                         {isCorrectOption && (

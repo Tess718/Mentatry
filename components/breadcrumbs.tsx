@@ -1,15 +1,19 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronRight, Home } from "lucide-react";
 
-export function Breadcrumbs() {
+function BreadcrumbsContent() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   
   if (!pathname || pathname === "/quizzes") return null;
 
   const segments = pathname.split("/").filter(Boolean);
+  const from = searchParams?.get("from");
+  const roomId = searchParams?.get("roomId");
   
   // Custom mapping for friendly names
   const getFriendlyName = (segment: string) => {
@@ -28,36 +32,62 @@ export function Breadcrumbs() {
     return segment.charAt(0).toUpperCase() + segment.slice(1);
   };
 
+  let crumbs = [];
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    if (segment === "quizzes" && i === 0) continue;
+    if (segment.length >= 20) continue;
+
+    const href = "/" + segments.slice(0, i + 1).join("/");
+    crumbs.push({ label: getFriendlyName(segment), href });
+  }
+
+  // Inject contextual intermediate breadcrumbs based on query params
+  if (segments.includes("results") && from) {
+    const quizId = segments[1];
+    const resultsCrumb = crumbs.pop();
+    
+    if (from === "insights" && quizId) {
+      crumbs.push({ label: "Insights", href: `/quizzes/${quizId}/insights` });
+    } else if (from === "room" && roomId) {
+      crumbs.push({ label: "Room Summary", href: `/rooms/${roomId}/summary` });
+    }
+    
+    if (resultsCrumb) {
+      crumbs.push(resultsCrumb);
+    }
+  }
+
   return (
     <nav className="flex items-center gap-2 text-sm font-bold text-slate-400 mb-6 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
       <Link href="/quizzes" className="hover:text-amber-300 text-slate-400 transition-colors flex items-center gap-1">
         <Home className="w-4 h-4" />
       </Link>
       
-      {segments.map((segment, index) => {
-        // Skip 'quizzes' if it's the first segment, as it's represented by the home icon
-        if (segment === "quizzes" && index === 0) return null;
-        
-        const isIdSegment = segment.length >= 20;
-        // Skip ID segments entirely so they don't show up in the breadcrumbs
-        if (isIdSegment) return null;
-
-        const isLast = index === segments.length - 1;
-        const href = "/" + segments.slice(0, index + 1).join("/");
+      {crumbs.map((crumb, index) => {
+        const isLast = index === crumbs.length - 1;
         
         return (
-          <div key={href} className="flex items-center gap-2">
+          <div key={crumb.label + crumb.href} className="flex items-center gap-2">
             <ChevronRight className="w-4 h-4 text-slate-500 shrink-0" />
             {isLast ? (
-              <span className="text-amber-400 font-black uppercase tracking-wider">{getFriendlyName(segment)}</span>
+              <span className="text-amber-400 font-black uppercase tracking-wider">{crumb.label}</span>
             ) : (
-              <Link href={href} className="hover:text-amber-300 transition-colors uppercase tracking-wider">
-                {getFriendlyName(segment)}
+              <Link href={crumb.href} className="hover:text-amber-300 transition-colors uppercase tracking-wider">
+                {crumb.label}
               </Link>
             )}
           </div>
         );
       })}
     </nav>
+  );
+}
+
+export function Breadcrumbs() {
+  return (
+    <Suspense fallback={<nav className="flex items-center gap-2 text-sm font-bold text-slate-400 mb-6 pb-2"><Link href="/quizzes"><Home className="w-4 h-4" /></Link></nav>}>
+      <BreadcrumbsContent />
+    </Suspense>
   );
 }
