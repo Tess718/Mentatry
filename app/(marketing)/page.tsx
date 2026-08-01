@@ -66,9 +66,9 @@ export default function HomePage() {
             <span>GET STARTED FREE</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
-          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
+          <Link href="/rooms/join" className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-4 w-full sm:w-auto">
             <KeyRound className="w-5 h-5 stroke-[2.5]" />
-            <span>ENTER JOIN CODE</span>
+            <span>JOIN LIVE ROOM</span>
           </Link>
         </div>
       </section>

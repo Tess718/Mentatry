@@ -5,24 +5,20 @@ import { redirect, notFound } from "next/navigation";
 import { Trophy, ChevronRight, Clock, Star, Medal } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export default async function LeaderboardPage({ params }: PageProps) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
   const { id: roomId } = await params;
-  const userId = session.user.id;
 
   const room = await prisma.room.findUnique({
     where: { id: roomId },
     include: {
-      quiz: true,
+      quiz: { include: { questions: true } },
       participants: true,
+      guestParticipants: true,
     },
   });
 
@@ -30,12 +26,25 @@ export default async function LeaderboardPage({ params }: PageProps) {
     notFound();
   }
 
-  const isHost = room.hostId === userId;
-  const isParticipant = room.participants.some((p) => p.userId === userId);
+  let userId = "";
+  let isHost = false;
+  let isParticipant = false;
 
+  if (room.isGuestMode) {
+    redirect(`/rooms/join?code=${room.joinCode}`);
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  userId = session.user.id;
+  isHost = room.hostId === userId;
+  isParticipant = room.participants.some((p) => p.userId === userId);
+  
   if (!isHost && !isParticipant) {
     redirect("/quizzes");
   }
+
+  let scoredAttempts: any[] = [];
 
   // Fetch attempts explicitly tied to this room
   const attempts = await prisma.attempt.findMany({
@@ -47,7 +56,7 @@ export default async function LeaderboardPage({ params }: PageProps) {
   });
 
   // Calculate total time for tie-breakers and map for sorting
-  const scoredAttempts = attempts.map(attempt => {
+  scoredAttempts = attempts.map(attempt => {
     const totalTimeMs = attempt.answers.reduce((acc, ans) => acc + (ans.timeTakenMs || 0), 0);
     return {
       ...attempt,

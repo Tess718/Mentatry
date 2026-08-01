@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAlertModal } from "@/components/ui/use-alert-modal";
 
-export function ParticipantWaitView({ roomId }: { roomId: string }) {
+export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: string, baseRoute?: string }) {
   const router = useRouter();
   const { showAlert, AlertModal } = useAlertModal();
   const [status, setStatus] = useState<string>("WAITING");
@@ -24,14 +24,14 @@ export function ParticipantWaitView({ roomId }: { roomId: string }) {
 
           if (data.status === "ACTIVE") {
             clearInterval(interval);
-            router.push(`/rooms/${roomId}/take`);
+            router.push(`${baseRoute}/${roomId}/take`);
           } else if (data.status === "COMPLETED") {
             clearInterval(interval);
             if (data.userAttemptId) {
-              router.push(`/rooms/${roomId}/leaderboard`);
+              router.push(`${baseRoute}/${roomId}/leaderboard`);
             } else {
               showAlert("The host ended this room.", () => {
-                router.push(`/rooms/${roomId}/leaderboard`);
+                router.push(`${baseRoute}/${roomId}/leaderboard`);
               });
             }
           } else if (data.status === "EXPIRED") {

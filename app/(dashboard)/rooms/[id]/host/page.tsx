@@ -12,6 +12,15 @@ export default async function HostRoomPage({ params }: { params: Promise<{ id: s
 
   const room = await prisma.room.findUnique({
     where: { id },
+    include: {
+      quiz: {
+        include: {
+          questions: {
+            orderBy: { order: "asc" }
+          }
+        }
+      }
+    }
   });
 
   if (!room) {
@@ -25,7 +34,12 @@ export default async function HostRoomPage({ params }: { params: Promise<{ id: s
   return (
     <div className="w-full">
       <main className="px-6 pb-12">
-        <HostRoomView roomId={room.id} initialJoinCode={room.joinCode} />
+        <HostRoomView 
+          roomId={room.id} 
+          initialJoinCode={room.joinCode} 
+          isGuestMode={room.isGuestMode} 
+          questions={room.quiz.questions}
+        />
       </main>
     </div>
   );

@@ -11,7 +11,18 @@ interface Participant {
   firstName: string;
 }
 
-export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; initialJoinCode: string }) {
+export interface HostQuestionData {
+  id: string;
+  text: string;
+  options: string[];
+  order: number;
+  correctIndex: number;
+}
+
+import { GuestHostDashboard } from "./guest-host-dashboard";
+import Avatar from "@/components/ui/avatar";
+
+export function HostRoomView({ roomId, initialJoinCode, isGuestMode, questions }: { roomId: string; initialJoinCode: string; isGuestMode?: boolean; questions?: HostQuestionData[] }) {
   const router = useRouter();
   const { showAlert, AlertModal } = useAlertModal();
   const [status, setStatus] = useState<string>("WAITING");
@@ -20,6 +31,10 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
+
+  if (isGuestMode && questions) {
+    return <GuestHostDashboard roomId={roomId} initialJoinCode={initialJoinCode} questions={questions} />;
+  }
 
   useEffect(() => {
     let interval = setInterval(async () => {
@@ -178,13 +193,14 @@ export function HostRoomView({ roomId, initialJoinCode }: { roomId: string; init
                 <p className="font-bold">Waiting for players to join...</p>
               </div>
             ) : (
-              <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {participants.map(p => (
-                  <li key={p.id} className="bg-slate-50 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold text-center truncate shadow-sm">
-                    {p.firstName}
-                  </li>
+                  <div key={p.id} className="bg-slate-50 border-2 border-slate-200 p-3 rounded-xl flex flex-col items-center justify-center shadow-sm animate-in zoom-in duration-300">
+                    <Avatar seed={p.firstName} size={48} className="mb-2" />
+                    <span className="font-bold text-slate-800 text-sm w-full text-center truncate">{p.firstName}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </div>

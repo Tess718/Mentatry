@@ -20,9 +20,10 @@ interface LiveQuizTakerProps {
   timeLimitMinutes: number | null;
   startedAt: string;
   questions: QuestionData[];
+  baseRoute?: string;
 }
 
-export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes, startedAt, questions }: LiveQuizTakerProps) {
+export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes, startedAt, questions, baseRoute = "/rooms" }: LiveQuizTakerProps) {
   const router = useRouter();
   const { showAlert, AlertModal } = useAlertModal();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,10 +49,10 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
             clearInterval(pollInterval);
             setIsLocked(true);
             if (data.userAttemptId) {
-              router.push(`/rooms/${roomId}/leaderboard`);
+              router.push(`${baseRoute}/${roomId}/leaderboard`);
             } else {
               showAlert("The host has ended the quiz.", () => {
-                router.push(`/rooms/${roomId}/leaderboard`);
+                router.push(`${baseRoute}/${roomId}/leaderboard`);
               });
             }
           }
@@ -105,6 +106,7 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
 
     startTransition(async () => {
       const res = await submitLiveAnswerAction(roomId, currentQuestion.id, optionIndex, timeTakenMs);
+
       if (res.error) {
         showAlert(res.error);
         setIsLocked(true); // If rejected by server global timer, lock it
@@ -119,10 +121,6 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
         }
       }
     });
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
 
   const handleNext = () => {
@@ -226,16 +224,7 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between pt-8 border-t-2 border-slate-100">
-          <button
-            onClick={handlePrevious}
-            disabled={currentIndex === 0}
-            className="neo-btn bg-white border-2 border-black font-bold flex items-center disabled:opacity-50"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Previous
-          </button>
-
+        <div className="flex items-center justify-end pt-8 border-t-2 border-slate-100">
           <button
             onClick={handleNext}
             disabled={isLastQuestion}

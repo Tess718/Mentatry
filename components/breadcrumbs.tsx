@@ -33,6 +33,7 @@ function BreadcrumbsContent() {
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     if (segment === "quizzes" && i === 0) continue;
+    if (segment === "rooms") continue;
     if (segment.length >= 20) continue;
 
     const href = "/" + segments.slice(0, i + 1).join("/");

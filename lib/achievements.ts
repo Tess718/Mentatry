@@ -23,12 +23,15 @@ export async function checkAndAwardAchievements(userId: string) {
     where: { ownerId: userId, status: "PUBLISHED" },
   });
 
-  // Aggregate: Quizzes Joined (as Taker) - ignoring owned quizzes
+  // Aggregate: Quizzes Joined (as Taker) - ignoring owned quizzes and daily quizzes
   const quizzesJoinedCount = await prisma.quizAccess.count({
     where: {
       userId,
       role: "TAKER",
-      quiz: { ownerId: { not: userId } },
+      quiz: { 
+        ownerId: { not: userId },
+        isDailyQuiz: false 
+      },
     },
   });
 

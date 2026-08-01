@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { ArrowLeft, Users, Trophy } from "lucide-react";
 import { StudentAttemptsList } from "@/components/student-attempts-list";
+import { calculateAnswerPoints, computeGuestScoreFromAnswers } from "@/lib/scoring";
+import Avatar from "@/components/ui/avatar";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -63,18 +65,92 @@ export default async function RoomSummaryPage({ params }: PageProps) {
 
 
 
-  // Fetch attempts explicitly tied to this room
-  const attempts = await prisma.attempt.findMany({
-    where: { roomId },
-    include: {
-      user: { select: { email: true, firstName: true, lastName: true } },
-      answers: true,
-    },
-    orderBy: { score: "desc" }, // Order by score for the leaderboard effect
-  });
+  let totalParticipants = 0;
+  let topScorerScore: number | string = 0;
+  let maxPossibleScore: number | string = room.quiz.questions.length;
+  let content = null;
 
-  const totalParticipants = attempts.length;
-  const topScorer = attempts.length > 0 ? attempts[0] : null;
+  if (room.isGuestMode) {
+    const guests = await prisma.guestParticipant.findMany({
+      where: { roomId },
+      include: { 
+        answers: { 
+          include: { 
+            question: { select: { correctIndex: true, order: true } } 
+          },
+          orderBy: { question: { order: "asc" } }
+        } 
+      },
+    });
+
+    totalParticipants = guests.length;
+    maxPossibleScore = "pts";
+
+    const expectedDurationMs = room.quiz.timeLimitMinutes
+      ? (room.quiz.timeLimitMinutes * 60 * 1000) / (room.quiz.questions.length || 1)
+      : 15000;
+
+    const guestScores = guests.map((guest) => {
+      const { points, correctCount } = computeGuestScoreFromAnswers(room.quiz.questions, guest.answers, expectedDurationMs);
+      return { ...guest, points, correctCount };
+    }).sort((a, b) => b.points - a.points);
+
+    if (guestScores.length > 0) {
+      topScorerScore = guestScores[0].points;
+    }
+
+    content = (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-black uppercase tracking-tight text-white">Guest Leaderboard</h2>
+        {guestScores.length === 0 ? (
+          <div className="neo-box p-8 bg-white text-center text-slate-600 font-semibold italic">
+            No guests joined this room.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {guestScores.map((guest, idx) => (
+              <div key={guest.id} className="neo-box bg-white p-4 sm:p-6 flex items-center justify-between gap-4 transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex items-center gap-4">
+                  <div className="font-black text-2xl text-slate-400 w-8 text-center">{idx + 1}</div>
+                  <Avatar seed={guest.displayName} size={40} />
+                  <div className="font-extrabold text-black text-xl">{guest.displayName}</div>
+                </div>
+                <div className="flex items-center gap-6 text-right">
+                  <div className="text-sm font-bold text-slate-500 hidden sm:block">
+                    {guest.correctCount} / {room.quiz.questions.length} correct
+                  </div>
+                  <div className="neo-badge bg-yellow-300 text-black text-xl px-4 py-2">
+                    {guest.points} pts
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  } else {
+    // Standard authenticated room behavior
+    const attempts = await prisma.attempt.findMany({
+      where: { roomId },
+      include: {
+        user: { select: { email: true, firstName: true, lastName: true } },
+        answers: true,
+      },
+      orderBy: { score: "desc" },
+    });
+
+    totalParticipants = attempts.length;
+    topScorerScore = attempts.length > 0 ? attempts[0].score : 0;
+    maxPossibleScore = `/ ${room.quiz.questions.length}`;
+
+    content = (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-black uppercase tracking-tight text-white">Participant Results</h2>
+        <StudentAttemptsList attempts={attempts} questions={room.quiz.questions} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-6 space-y-8">
@@ -112,17 +188,14 @@ export default async function RoomSummaryPage({ params }: PageProps) {
             <span className="text-xs font-black uppercase text-slate-500">Top Score</span>
             <Trophy className="w-5 h-5 text-yellow-600" />
           </div>
-          <div className="text-3xl font-black text-black">
-            {topScorer ? topScorer.score : 0} <span className="text-base text-slate-500">/ {room.quiz.questions.length}</span>
+          <div className="text-3xl font-black text-black flex items-baseline gap-2">
+            {topScorerScore} <span className="text-base text-slate-500">{maxPossibleScore}</span>
           </div>
         </div>
       </div>
 
-      {/* Participant Results Breakdown */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-black uppercase tracking-tight text-white">Participant Results</h2>
-        <StudentAttemptsList attempts={attempts} questions={room.quiz.questions} />
-      </div>
+      {/* Dynamic Content Area */}
+      {content}
     </div>
   );
 }

@@ -4,11 +4,6 @@ import { notFound, redirect } from "next/navigation";
 import { ParticipantWaitView } from "@/components/participant-wait-view";
 
 export default async function WaitRoomPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
   const { id } = await params;
 
   const room = await prisma.room.findUnique({
@@ -17,6 +12,15 @@ export default async function WaitRoomPage({ params }: { params: Promise<{ id: s
 
   if (!room) {
     notFound();
+  }
+
+  if (room.isGuestMode) {
+    redirect(`/rooms/join?code=${room.joinCode}`);
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
   }
 
   // Ensure they are actually a participant or the host

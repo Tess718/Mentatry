@@ -5,11 +5,6 @@ import { LiveQuizTaker } from "@/components/live-quiz-taker";
 import { Navbar } from "@/components/navbar";
 
 export default async function LiveTakeQuizPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
   const { id } = await params;
 
   const room = await prisma.room.findUnique({
@@ -29,13 +24,13 @@ export default async function LiveTakeQuizPage({ params }: { params: Promise<{ i
     notFound();
   }
 
-  if (room.status !== "ACTIVE" || !room.startedAt) {
-    // If they got here early or late, redirect them to wait or quizzes
-    if (room.status === "WAITING") {
-      redirect(`/rooms/${room.id}/wait`);
-    } else {
-      redirect("/quizzes");
-    }
+  if (room.isGuestMode) {
+    redirect(`/rooms/join?code=${room.joinCode}`);
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
   }
 
   // Ensure they are actually a participant or the host
@@ -45,6 +40,15 @@ export default async function LiveTakeQuizPage({ params }: { params: Promise<{ i
 
   if (!participant && room.hostId !== session.user.id) {
     redirect("/quizzes");
+  }
+
+  if (room.status !== "ACTIVE" || !room.startedAt) {
+    // If they got here early or late, redirect them to wait or quizzes
+    if (room.status === "WAITING") {
+      redirect(`/rooms/${room.id}/wait`);
+    } else {
+      redirect("/quizzes");
+    }
   }
 
   const sanitizedQuestions = room.quiz.questions.map((q) => ({

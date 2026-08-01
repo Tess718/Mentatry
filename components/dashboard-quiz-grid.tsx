@@ -22,6 +22,7 @@ export interface DashboardQuizItem {
   bestScore: number;
   latestAttemptScore: number | null;
   latestAttemptId: string | null;
+  isDailyQuiz: boolean;
 }
 
 export function DashboardQuizGrid({
@@ -230,7 +231,7 @@ export function DashboardQuizGrid({
                   </div>
 
                   {/* Join Code Display */}
-                  {quiz.joinCode && quiz.status === "PUBLISHED" && (
+                  {quiz.joinCode && quiz.status === "PUBLISHED" && !quiz.isDailyQuiz && (
                     <div className="pt-1">
                       <CopyJoinCodeButton joinCode={quiz.joinCode} />
                     </div>

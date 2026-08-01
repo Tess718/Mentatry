@@ -23,9 +23,23 @@ export default async function QuizzesDashboardPage() {
   const userId = session.user.id;
   const userFirstName = session.user.firstName || "Quizmaster";
 
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setUTCDate(startOfTomorrow.getUTCDate() + 1);
+
   // Fetch all quizzes user owns or has access to — only select fields the dashboard needs
   const accessRecords = await prisma.quizAccess.findMany({
-    where: { userId },
+    where: { 
+      userId,
+      quiz: {
+        OR: [
+          { isDailyQuiz: false },
+          { isDailyQuiz: true, dailyDate: { gte: startOfToday, lt: startOfTomorrow } },
+        ],
+      },
+    },
     include: {
       quiz: {
         include: {
@@ -33,7 +47,7 @@ export default async function QuizzesDashboardPage() {
             select: { questions: true },
           },
           attempts: {
-            where: { userId },
+            where: { userId, completedAt: { not: null } },
             orderBy: { completedAt: "desc" },
             select: {
               id: true,
@@ -70,6 +84,7 @@ export default async function QuizzesDashboardPage() {
       joinCode: quiz.joinCode,
       createdAt: quiz.createdAt.toISOString(),
       isOwner,
+      isDailyQuiz: quiz.isDailyQuiz,
       questionCount,
       attemptsCount: attempts.length,
       bestScore,

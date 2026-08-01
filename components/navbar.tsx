@@ -18,15 +18,17 @@ export async function Navbar() {
           href="/"
           className="flex items-center gap-2 bg-amber-400 text-black px-2.5 md:px-3.5 py-1 md:py-1.5 font-black tracking-wider border-2 md:border-3 border-black shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] md:shadow-[3px_3px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-0.5 transition-transform rounded-xl shrink-0"
         >
-          <Image 
-            src="/mentatry_logo.png" 
-            alt="Mentatry Logo" 
-            width={32} 
+          <Image
+            src="/mentatry_logo.png"
+            alt="Mentatry Logo"
+            width={32}
             height={32}
             className="w-5 h-5 md:w-6 md:h-6 object-contain shrink-0"
             priority
           />
-          <span className="font-bebas tracking-widest text-xl md:text-2xl">MENTATRY</span>
+          <span className="font-bebas tracking-widest text-xl md:text-2xl">
+            MENTATRY
+          </span>
         </Link>
 
         {/* Header Right Items */}
@@ -40,7 +42,7 @@ export async function Navbar() {
               >
                 Dashboard
               </Link>
-              
+
               {/* Achievements */}
               <Link
                 href="/achievements"
@@ -86,10 +88,16 @@ export async function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login" className="neo-btn neo-btn-white text-xs py-1.5 md:py-2 px-2.5 md:px-4 whitespace-nowrap">
+              <Link
+                href="/login"
+                className="neo-btn neo-btn-white text-xs py-1.5 md:py-2 px-2.5 md:px-4 whitespace-nowrap"
+              >
                 Log In
               </Link>
-              <Link href="/signup" className="neo-btn neo-btn-pink text-xs py-1.5 md:py-2 px-2.5 md:px-4 whitespace-nowrap">
+              <Link
+                href="/signup"
+                className="neo-btn neo-btn-pink text-xs py-1.5 md:py-2 px-2.5 md:px-4 whitespace-nowrap"
+              >
                 Sign Up
               </Link>
             </>
