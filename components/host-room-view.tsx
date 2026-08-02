@@ -21,6 +21,7 @@ export interface HostQuestionData {
 
 import { GuestHostDashboard } from "./guest-host-dashboard";
 import Avatar from "@/components/ui/avatar";
+import { useSSERelay } from "@/hooks/use-sse-relay";
 
 export function HostRoomView({ roomId, initialJoinCode, isGuestMode, questions }: { roomId: string; initialJoinCode: string; isGuestMode?: boolean; questions?: HostQuestionData[] }) {
   const router = useRouter();
@@ -32,37 +33,56 @@ export function HostRoomView({ roomId, initialJoinCode, isGuestMode, questions }
   const [copied, setCopied] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
 
+  const syncState = async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/status`);
+      if (res.ok) {
+        const data = await res.json();
+        setStatus(data.status);
+        setParticipants(data.participants || []);
+        if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
+
+        // Stop polling on terminal states
+        if (data.status === "COMPLETED" || data.status === "EXPIRED") {
+          if (data.status === "COMPLETED") {
+            router.push(`/rooms/${roomId}/summary`);
+          }
+          return data.status;
+        }
+      }
+    } catch (err) {
+      console.error("State sync error:", err);
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (isGuestMode) return; // Guest mode uses its own dashboard with its own polling
+    let interval = setInterval(async () => {
+      const finalStatus = await syncState();
+      if (finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
+        clearInterval(interval);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [roomId, router, isGuestMode]);
+
+  useSSERelay({
+    roomId,
+    onEvent: (event) => {
+      if (event.type !== 'answer_submitted') {
+        syncState();
+      }
+    },
+    onResync: () => {
+      syncState();
+    }
+  });
+
+  // Early return AFTER all hooks are called (React rules-of-hooks)
   if (isGuestMode && questions) {
     return <GuestHostDashboard roomId={roomId} initialJoinCode={initialJoinCode} questions={questions} />;
   }
-
-  useEffect(() => {
-    let interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/rooms/${roomId}/status`);
-        if (res.ok) {
-          const data = await res.json();
-          setStatus(data.status);
-          setParticipants(data.participants || []);
-          if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
-
-          // Stop polling on terminal states
-          if (data.status === "COMPLETED" || data.status === "EXPIRED") {
-            clearInterval(interval);
-            
-            // If the room completed elsewhere, redirect host to summary
-            if (data.status === "COMPLETED") {
-              router.push(`/rooms/${roomId}/summary`);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Polling error:", err);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [roomId]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(initialJoinCode);

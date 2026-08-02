@@ -13,6 +13,7 @@ interface Participant {
 
 import { HostQuestionData } from "./host-room-view";
 import Avatar from "@/components/ui/avatar";
+import { useSSERelay } from "@/hooks/use-sse-relay";
 
 export function GuestHostDashboard({ roomId, initialJoinCode, questions }: { roomId: string; initialJoinCode: string; questions?: HostQuestionData[] }) {
   const router = useRouter();
@@ -32,35 +33,62 @@ export function GuestHostDashboard({ roomId, initialJoinCode, questions }: { roo
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
 
+  const syncState = async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/status`);
+      if (res.ok) {
+        const data = await res.json();
+        setStatus(data.status);
+        setParticipants(data.participants || []);
+        if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
+        
+        if (data.currentPhase) setCurrentPhase(data.currentPhase);
+        if (data.currentQuestionIndex !== undefined) setCurrentQuestionIndex(data.currentQuestionIndex);
+        if (data.phaseStartedAt) setPhaseStartedAt(data.phaseStartedAt);
+        if (data.autoAdvance !== undefined) setAutoAdvance(data.autoAdvance);
+        if (data.answerCount !== undefined) setAnswerCount(data.answerCount);
+
+        if (data.status === "COMPLETED" || data.status === "EXPIRED") {
+          return data.status; // Return status so interval can be cleared
+        }
+      }
+    } catch (err) {
+      console.error("State sync error:", err);
+    }
+    return null;
+  };
+
+  // 1. Always-on Polling Fallback
   useEffect(() => {
     let interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/rooms/${roomId}/status`);
-        if (res.ok) {
-          const data = await res.json();
-          setStatus(data.status);
-          setParticipants(data.participants || []);
-          if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
-          
-          if (data.currentPhase) setCurrentPhase(data.currentPhase);
-          if (data.currentQuestionIndex !== undefined) setCurrentQuestionIndex(data.currentQuestionIndex);
-          if (data.phaseStartedAt) setPhaseStartedAt(data.phaseStartedAt);
-          if (data.autoAdvance !== undefined) setAutoAdvance(data.autoAdvance);
-          if (data.answerCount !== undefined) setAnswerCount(data.answerCount);
-
-          if (data.status === "COMPLETED" || data.status === "EXPIRED") {
-            clearInterval(interval);
-            if (data.status === "COMPLETED") {
-              router.push(`/rooms/${roomId}/summary`);
-            }
-          }
+      const finalStatus = await syncState();
+      if (finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
+        clearInterval(interval);
+        if (finalStatus === "COMPLETED") {
+          router.push(`/rooms/${roomId}/summary`);
         }
-      } catch (err) {
-        console.error("Polling error:", err);
       }
     }, 1000);
     return () => clearInterval(interval);
   }, [roomId, router]);
+
+  // 2. Additive SSE Relay
+  useSSERelay({
+    roomId,
+    onEvent: (event) => {
+      // For immediate UI feedback, we can optimistically update
+      if (event.type === 'answer_submitted') {
+        setAnswerCount(prev => prev + 1);
+      } else {
+        // But for phase changes and joins, always trigger an out-of-band fetch to get exact authoritative state
+        syncState();
+      }
+    },
+    onResync: () => {
+      // Triggered immediately when EventSource recovers from a drop
+      syncState();
+    }
+  });
 
   // Auto-advance logic
   useEffect(() => {
@@ -215,7 +243,6 @@ export function GuestHostDashboard({ roomId, initialJoinCode, questions }: { roo
             </div>
             {copied && <div className="text-green-600 font-bold mt-2 text-sm">Copied to clipboard!</div>}
           </div>
-          <p className="text-slate-500 font-semibold text-lg">Tell players to go to mentatry.com/join</p>
 
           {participants.length > 0 && (
             <div className="mt-12 flex flex-wrap gap-4 justify-center">

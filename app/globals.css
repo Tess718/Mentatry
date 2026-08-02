@@ -199,3 +199,12 @@
 .animate-spin-slow {
   animation: spin-slow 18s linear infinite;
 }
+
+/* Hide scrollbar for peek carousels */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

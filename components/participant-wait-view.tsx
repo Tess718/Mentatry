@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAlertModal } from "@/components/ui/use-alert-modal";
+import { useSSERelay } from "@/hooks/use-sse-relay";
 
 export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: string, baseRoute?: string }) {
   const router = useRouter();
@@ -12,40 +13,59 @@ export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: 
   const [participantsCount, setParticipantsCount] = useState<number>(0);
   const [maxParticipants, setMaxParticipants] = useState<number>(50);
 
+  const syncState = async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/status`);
+      if (res.ok) {
+        const data = await res.json();
+        setStatus(data.status);
+        if (data.participants) setParticipantsCount(data.participants.length);
+        if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
+
+        if (data.status === "ACTIVE") {
+          router.push(`${baseRoute}/${roomId}/take`);
+          return data.status;
+        } else if (data.status === "COMPLETED") {
+          if (data.userAttemptId) {
+            router.push(`${baseRoute}/${roomId}/leaderboard`);
+          } else {
+            showAlert("The host ended this room.", () => {
+              router.push(`${baseRoute}/${roomId}/leaderboard`);
+            });
+          }
+          return data.status;
+        } else if (data.status === "EXPIRED") {
+          return data.status;
+        }
+      }
+    } catch (err) {
+      console.error("State sync error:", err);
+    }
+    return null;
+  };
+
   useEffect(() => {
     let interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/rooms/${roomId}/status`);
-        if (res.ok) {
-          const data = await res.json();
-          setStatus(data.status);
-          if (data.participants) setParticipantsCount(data.participants.length);
-          if (data.maxParticipants) setMaxParticipants(data.maxParticipants);
-
-          if (data.status === "ACTIVE") {
-            clearInterval(interval);
-            router.push(`${baseRoute}/${roomId}/take`);
-          } else if (data.status === "COMPLETED") {
-            clearInterval(interval);
-            if (data.userAttemptId) {
-              router.push(`${baseRoute}/${roomId}/leaderboard`);
-            } else {
-              showAlert("The host ended this room.", () => {
-                router.push(`${baseRoute}/${roomId}/leaderboard`);
-              });
-            }
-          } else if (data.status === "EXPIRED") {
-            clearInterval(interval);
-            // Handle below in UI render
-          }
-        }
-      } catch (err) {
-        console.error("Polling error:", err);
+      const finalStatus = await syncState();
+      if (finalStatus === "ACTIVE" || finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
+        clearInterval(interval);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [roomId, router]);
+  }, [roomId, router, baseRoute, showAlert]);
+
+  useSSERelay({
+    roomId,
+    onEvent: (event) => {
+      if (event.type !== 'answer_submitted') {
+        syncState();
+      }
+    },
+    onResync: () => {
+      syncState();
+    }
+  });
 
   return (
     <div className="max-w-2xl mx-auto pt-20">

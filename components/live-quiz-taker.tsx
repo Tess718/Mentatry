@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { submitLiveAnswerAction } from "@/app/actions/rooms";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Timer, Lock } from "lucide-react";
 import { useAlertModal } from "@/components/ui/use-alert-modal";
+import { useSSERelay } from "@/hooks/use-sse-relay";
 
 interface QuestionData {
   id: string;
@@ -38,30 +39,53 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
+  const syncState = async () => {
+    try {
+      const res = await fetch(`/api/rooms/${roomId}/status`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === "COMPLETED") {
+          setIsLocked(true);
+          if (data.userAttemptId) {
+            router.push(`${baseRoute}/${roomId}/leaderboard`);
+          } else {
+            showAlert("The host has ended the quiz.", () => {
+              router.push(`${baseRoute}/${roomId}/leaderboard`);
+            });
+          }
+          return data.status;
+        }
+      }
+    } catch (err) {
+      console.error("State sync error:", err);
+    }
+    return null;
+  };
+
   useEffect(() => {
     // 1. Polling for early termination by host
     const pollInterval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/rooms/${roomId}/status`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.status === "COMPLETED") {
-            clearInterval(pollInterval);
-            setIsLocked(true);
-            if (data.userAttemptId) {
-              router.push(`${baseRoute}/${roomId}/leaderboard`);
-            } else {
-              showAlert("The host has ended the quiz.", () => {
-                router.push(`${baseRoute}/${roomId}/leaderboard`);
-              });
-            }
-          }
-        }
-      } catch (err) {
-        // ignore
+      const finalStatus = await syncState();
+      if (finalStatus === "COMPLETED") {
+        clearInterval(pollInterval);
       }
-    }, 5000);
+    }, 1000);
+    return () => clearInterval(pollInterval);
+  }, [roomId, router, baseRoute, showAlert]);
 
+  useSSERelay({
+    roomId,
+    onEvent: (event) => {
+      if (event.type !== 'answer_submitted') {
+        syncState();
+      }
+    },
+    onResync: () => {
+      syncState();
+    }
+  });
+
+  useEffect(() => {
     // 2. Timer countdown
     let timerInterval: NodeJS.Timeout;
     if (timeLimitMinutes) {
@@ -80,10 +104,9 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
     }
 
     return () => {
-      clearInterval(pollInterval);
       if (timerInterval) clearInterval(timerInterval);
     };
-  }, [roomId, startedAt, timeLimitMinutes, router]);
+  }, [startedAt, timeLimitMinutes]);
 
   // Reset question timer when navigating to a new question
   useEffect(() => {

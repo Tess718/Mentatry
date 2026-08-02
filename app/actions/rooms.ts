@@ -7,6 +7,7 @@ import { generateJoinCode } from "@/lib/utils";
 import { redis } from "@/lib/redis";
 import { checkAndAwardAchievements } from "@/lib/achievements";
 import { calculateAnswerPoints } from "@/lib/scoring";
+import { pushToRelay } from "@/lib/relay";
 
 const MAX_JOIN_CODE_RETRIES = 5;
 
@@ -110,6 +111,9 @@ export async function joinRoomAction(joinCode: string) {
     create: { roomId: room.id, userId },
   });
 
+  // Push event to relay
+  await pushToRelay(room.id, { type: 'join' });
+
   return { roomId: room.id };
 }
 
@@ -170,6 +174,9 @@ export async function joinGuestRoomAction(joinCode: string, displayName: string)
     path: `/`,
     maxAge: 60 * 60 * 24 // 24 hours
   });
+
+  // Push event to relay
+  await pushToRelay(room.id, { type: 'join' });
 
   return { roomId: room.id };
 }
@@ -257,6 +264,9 @@ export async function startRoomAction(roomId: string) {
     }
   }
 
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'phase_change', phase: currentPhase || "STARTING", status: "ACTIVE" });
+
   return { success: true };
 }
 
@@ -299,6 +309,9 @@ export async function submitLiveAnswerAction(roomId: string, questionId: string,
   const question = room.quiz.questions.find((q) => q.id === questionId);
   const isCorrect = question ? question.correctIndex === selectedOption : false;
 
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'answer_submitted' });
+
   return { success: true, isCorrect };
 }
 
@@ -338,6 +351,9 @@ export async function submitGuestLiveAnswerAction(roomId: string, questionId: st
 
   const question = room.quiz.questions.find((q) => q.id === questionId);
   const isCorrect = question ? question.correctIndex === selectedOption : false;
+
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'answer_submitted' });
 
   return { success: true, isCorrect };
 }
@@ -447,6 +463,9 @@ export async function finalizeRoom(roomId: string) {
     }
   }
 
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'phase_change', phase: "COMPLETED", status: "COMPLETED" });
+
   return { success: true };
 }
 
@@ -505,6 +524,9 @@ export async function advanceToQuestionAction(roomId: string, index: number) {
     }
   }
 
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'phase_change', phase: "QUESTION_ACTIVE", questionIndex: index });
+
   return { success: true };
 }
 
@@ -539,6 +561,9 @@ export async function showResultsAction(roomId: string) {
     }
   }
 
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'phase_change', phase: "QUESTION_RESULTS" });
+
   return { success: true };
 }
 
@@ -572,6 +597,9 @@ export async function showLeaderboardAction(roomId: string) {
       console.warn("Redis update failed", e);
     }
   }
+
+  // Push event to relay
+  await pushToRelay(roomId, { type: 'phase_change', phase: "LEADERBOARD" });
 
   return { success: true };
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { cookies } from "next/headers";
+import { pushToRelay } from "@/lib/relay";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -79,6 +80,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }
       throw error;
     }
+
+    // Push event to relay
+    await pushToRelay(roomId, { type: 'answer_submitted' });
 
     return NextResponse.json({ success: true, isCorrect });
   } catch (error) {

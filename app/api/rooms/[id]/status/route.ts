@@ -19,19 +19,63 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Always fetch participants fresh from Postgres (cheap query, prevents lost-update races).
     // Only use Redis for status/timing fields.
     let cachedState: any = null;
+    let staticData: any = null;
     if (redis) {
       cachedState = await redis.get(`room:${roomId}`);
+      staticData = await redis.get(`room:${roomId}:static`);
     }
 
-    // Always get participants from Postgres (authoritative)
+    if (!staticData) {
+      const roomStatic = await prisma.room.findUnique({
+        where: { id: roomId },
+        select: {
+          maxParticipants: true,
+          quiz: {
+            select: {
+              timeLimitMinutes: true,
+              questions: { select: { id: true }, orderBy: { order: "asc" } }
+            }
+          }
+        }
+      });
+      if (roomStatic) {
+        staticData = {
+          maxParticipants: roomStatic.maxParticipants,
+          timeLimitMinutes: roomStatic.quiz.timeLimitMinutes,
+          questionIds: roomStatic.quiz.questions.map(q => q.id)
+        };
+        if (redis) {
+          try {
+            await redis.set(`room:${roomId}:static`, staticData);
+            await redis.expire(`room:${roomId}:static`, 60 * 60 * 24);
+          } catch (e) {
+            console.warn("Failed to set static cache", e);
+          }
+        }
+      }
+    }
+
+    // Always get dynamic state + participants from Postgres (authoritative)
     const room = await prisma.room.findUnique({
       where: { id: roomId },
-      include: {
-        quiz: { include: { questions: { orderBy: { order: "asc" } } } },
+      select: {
+        id: true,
+        status: true,
+        startedAt: true,
+        createdAt: true,
+        currentPhase: true,
+        currentQuestionIndex: true,
+        phaseStartedAt: true,
+        autoAdvance: true,
+        isGuestMode: true,
+        hostId: true,
+        quizId: true,
         participants: {
-          include: { user: { select: { id: true, firstName: true } } }
+          select: { user: { select: { id: true, firstName: true } } }
         },
-        guestParticipants: true
+        guestParticipants: {
+          select: { id: true, displayName: true, sessionToken: true }
+        }
       }
     });
 
@@ -70,20 +114,20 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Get Answer Count - Always use Postgres for exact accuracy to prevent getting stuck
     let answerCount = 0;
     if (room.currentPhase === "QUESTION_ACTIVE") {
-      const currentQ = room.quiz.questions[room.currentQuestionIndex];
-      if (currentQ) {
+      const currentQuestionId = staticData?.questionIds?.[room.currentQuestionIndex];
+      if (currentQuestionId) {
         if (room.isGuestMode) {
           answerCount = await prisma.guestAnswer.count({
             where: { 
               guest: { roomId },
-              questionId: currentQ.id 
+              questionId: currentQuestionId 
             }
           });
         } else {
           answerCount = await prisma.roomAnswer.count({
             where: {
               roomId: roomId,
-              questionId: currentQ.id
+              questionId: currentQuestionId
             }
           });
         }
@@ -95,8 +139,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       status: cachedState?.status || room.status,
       startedAt: cachedState?.startedAt || room.startedAt?.toISOString() || null,
       createdAt: cachedState?.createdAt || room.createdAt.toISOString(),
-      timeLimitMinutes: cachedState?.timeLimitMinutes || room.quiz.timeLimitMinutes,
-      maxParticipants: cachedState?.maxParticipants || room.maxParticipants,
+      timeLimitMinutes: cachedState?.timeLimitMinutes || staticData?.timeLimitMinutes,
+      maxParticipants: cachedState?.maxParticipants || staticData?.maxParticipants,
       participants, // Always from Postgres
       // Game State fields
       currentPhase: cachedState?.currentPhase !== undefined ? cachedState?.currentPhase : room.currentPhase,
@@ -159,7 +203,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // 3. Per-Question Fallback (2 mins past expected duration)
     if (state.status === "ACTIVE" && state.currentPhase === "QUESTION_ACTIVE" && state.phaseStartedAt && state.timeLimitMinutes) {
       const qStartMs = new Date(state.phaseStartedAt).getTime();
-      const expectedDurationMs = (state.timeLimitMinutes * 60 * 1000) / (room.quiz.questions.length || 1);
+      const expectedDurationMs = (state.timeLimitMinutes * 60 * 1000) / (staticData?.questionIds?.length || 1);
       const fallbackGraceMs = 2 * 60 * 1000; // 2 minutes past expected time
       
       if (Date.now() > qStartMs + expectedDurationMs + fallbackGraceMs) {
