@@ -81,6 +81,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       throw error;
     }
 
+    // Optimize answer counting via Redis
+    if (redis) {
+      try {
+        const key = `room:${roomId}:q:${questionId}:answers`;
+        await redis.incr(key);
+        await redis.expire(key, 60 * 60 * 24); // 24 hours
+      } catch (e) {
+        console.warn("Failed to update redis answer count", e);
+      }
+    }
+
     // Push event to relay
     await pushToRelay(roomId, { type: 'answer_submitted' });
 

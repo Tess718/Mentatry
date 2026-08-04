@@ -111,25 +111,40 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           firstName: p.user.firstName || "Player",
         }));
 
-    // Get Answer Count - Always use Postgres for exact accuracy to prevent getting stuck
+    // Get Answer Count - Fail-open Redis optimization
     let answerCount = 0;
     if (room.currentPhase === "QUESTION_ACTIVE") {
       const currentQuestionId = staticData?.questionIds?.[room.currentQuestionIndex];
       if (currentQuestionId) {
-        if (room.isGuestMode) {
-          answerCount = await prisma.guestAnswer.count({
-            where: { 
-              guest: { roomId },
-              questionId: currentQuestionId 
-            }
-          });
+        let countFromRedis = null;
+        if (redis) {
+          try {
+            const key = `room:${roomId}:q:${currentQuestionId}:answers`;
+            countFromRedis = await redis.get(key);
+          } catch (e) {
+            console.warn("Failed to read redis answer count", e);
+          }
+        }
+        
+        if (countFromRedis !== null && countFromRedis !== undefined) {
+          answerCount = Number(countFromRedis);
         } else {
-          answerCount = await prisma.roomAnswer.count({
-            where: {
-              roomId: roomId,
-              questionId: currentQuestionId
-            }
-          });
+          // Fallback to authoritative Postgres count if Redis is missing/empty
+          if (room.isGuestMode) {
+            answerCount = await prisma.guestAnswer.count({
+              where: { 
+                guest: { roomId },
+                questionId: currentQuestionId 
+              }
+            });
+          } else {
+            answerCount = await prisma.roomAnswer.count({
+              where: {
+                roomId: roomId,
+                questionId: currentQuestionId
+              }
+            });
+          }
         }
       }
     }

@@ -3,8 +3,6 @@ import { PrismaClient } from './generated/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding achievements...');
-
   const achievements = [
     {
       key: 'first_quiz',
@@ -104,8 +102,6 @@ async function main() {
       create: ach,
     });
   }
-
-  console.log('Achievements seeded successfully.');
 }
 
 main()

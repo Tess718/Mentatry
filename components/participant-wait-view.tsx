@@ -50,7 +50,7 @@ export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: 
       if (finalStatus === "ACTIVE" || finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
         clearInterval(interval);
       }
-    }, 1000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [roomId, router, baseRoute, showAlert]);

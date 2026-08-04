@@ -54,11 +54,9 @@ async function discoverFlashCandidates(ai: GoogleGenAI): Promise<string[]> {
       return b.localeCompare(a, undefined, { numeric: true }); // higher version first
     });
 
-    console.log(`[Gemini AI] Discovered ${candidates.length} Flash model candidate(s): ${JSON.stringify(candidates)}`);
     discoveredCandidates = candidates;
     return candidates;
   } catch (err) {
-    console.warn("[Gemini AI] models.list() call failed:", err);
     discoveredCandidates = [];
     return [];
   }
@@ -128,8 +126,6 @@ export async function generateQuizWithAI({
     };
   }
 
-  console.log(`[Gemini AI] Will try models in order: ${JSON.stringify(modelsToTry)}`);
-
   const prompt = `You are an expert educational quiz creator. Generate a high-quality, engaging multiple-choice quiz based on the following parameters:
 - Source Type: ${sourceType}
 - Source Content: "${sourceContent}"
@@ -169,8 +165,6 @@ CRITICAL CONSTRAINTS:
   };
 
   for (const modelName of modelsToTry) {
-    console.log(`[Gemini AI] Attempting model: "${modelName}"`);
-
     try {
       const response = await ai.models.generateContent({
         model: modelName,
@@ -196,13 +190,9 @@ CRITICAL CONSTRAINTS:
       if (validation.success && validation.data.questions.length === questionCount) {
         // This model works — cache it for all future calls this server process
         verifiedModel = modelName;
-        console.log(`[Gemini AI] ✓ Success with model "${modelName}" — cached as verified.`);
         return { success: true, data: validation.data };
       }
 
-      console.warn(`[Gemini AI] Model "${modelName}" returned data but failed Zod validation:`,
-        validation.success ? "Question count mismatch" : validation.error?.issues
-      );
       // Validation failure doesn't mean the model is dead — still cache it
       verifiedModel = modelName;
     } catch (err: any) {

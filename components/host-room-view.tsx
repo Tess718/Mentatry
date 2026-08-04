@@ -63,12 +63,13 @@ export function HostRoomView({ roomId, initialJoinCode, isGuestMode, questions }
       if (finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
         clearInterval(interval);
       }
-    }, 1000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [roomId, router, isGuestMode]);
 
   useSSERelay({
     roomId,
+    enabled: !isGuestMode,
     onEvent: (event) => {
       if (event.type !== 'answer_submitted') {
         syncState();

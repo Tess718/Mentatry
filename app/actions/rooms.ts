@@ -306,6 +306,17 @@ export async function submitLiveAnswerAction(roomId: string, questionId: string,
     throw error;
   }
 
+  // Optimize answer counting via Redis
+  if (redis) {
+    try {
+      const key = `room:${roomId}:q:${questionId}:answers`;
+      await redis.incr(key);
+      await redis.expire(key, 60 * 60 * 24); // 24 hours
+    } catch (e) {
+      console.warn("Failed to update redis answer count", e);
+    }
+  }
+
   const question = room.quiz.questions.find((q) => q.id === questionId);
   const isCorrect = question ? question.correctIndex === selectedOption : false;
 
@@ -347,6 +358,17 @@ export async function submitGuestLiveAnswerAction(roomId: string, questionId: st
       return { error: "You have already submitted an answer for this question." };
     }
     throw error;
+  }
+
+  // Optimize answer counting via Redis
+  if (redis) {
+    try {
+      const key = `room:${roomId}:q:${questionId}:answers`;
+      await redis.incr(key);
+      await redis.expire(key, 60 * 60 * 24); // 24 hours
+    } catch (e) {
+      console.warn("Failed to update redis answer count", e);
+    }
   }
 
   const question = room.quiz.questions.find((q) => q.id === questionId);

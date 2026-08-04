@@ -60,7 +60,8 @@ export function GuestHostDashboard({ roomId, initialJoinCode, questions }: { roo
 
   // 1. Always-on Polling Fallback
   useEffect(() => {
-    let interval = setInterval(async () => {
+    // Fallback polling for missed SSE events or general state sync
+    const interval = setInterval(async () => {
       const finalStatus = await syncState();
       if (finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
         clearInterval(interval);
@@ -68,7 +69,7 @@ export function GuestHostDashboard({ roomId, initialJoinCode, questions }: { roo
           router.push(`/rooms/${roomId}/summary`);
         }
       }
-    }, 1000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [roomId, router]);
 

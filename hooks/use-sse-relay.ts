@@ -6,9 +6,10 @@ interface UseSSERelayOptions {
   roomId: string;
   onEvent: (event: any) => void;
   onResync: () => void;
+  enabled?: boolean;
 }
 
-export function useSSERelay({ roomId, onEvent, onResync }: UseSSERelayOptions) {
+export function useSSERelay({ roomId, onEvent, onResync, enabled = true }: UseSSERelayOptions) {
   const eventSourceRef = useRef<EventSource | null>(null);
   const isMounted = useRef(true);
   const hasConnectedOnce = useRef(false);
@@ -25,6 +26,10 @@ export function useSSERelay({ roomId, onEvent, onResync }: UseSSERelayOptions) {
   useEffect(() => {
     isMounted.current = true;
     const relayUrl = process.env.NEXT_PUBLIC_RELAY_URL;
+    
+    if (!enabled) {
+      return;
+    }
 
     if (!relayUrl || !roomId) {
       return;

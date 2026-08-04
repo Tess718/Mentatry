@@ -69,7 +69,7 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
       if (finalStatus === "COMPLETED") {
         clearInterval(pollInterval);
       }
-    }, 1000);
+    }, 5000);
     return () => clearInterval(pollInterval);
   }, [roomId, router, baseRoute, showAlert]);
 
