@@ -100,96 +100,9 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 4 Color Cards — Peek Carousel on mobile, 2x2 Grid on md+ */}
-        <div className="md:hidden -mx-4 sm:-mx-8 px-4 sm:px-8">
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide" style={{ scrollPaddingLeft: '1rem' }}>
-            {/* Card 1: AI Quiz Generator (Yellow) */}
-            <div className="neo-box-yellow rounded-3xl p-6 space-y-6 flex flex-col justify-between snap-start shrink-0 w-[85vw] max-w-[340px]">
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <Brain className="w-8 h-8 text-black stroke-[2.5]" />
-                </div>
-                <h3 className="text-2xl font-black uppercase text-black">
-                  AI Quiz Generator
-                </h3>
-                <p className="text-black font-bold text-sm leading-relaxed">
-                  Generate high-quality multiple-choice questions from any custom
-                  topic or pasted lecture notes with complete answer choices and
-                  detailed explanations.
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-                <span>Instant Generation</span>
-                <Zap className="w-4 h-4 fill-black" />
-              </div>
-            </div>
-
-            {/* Card 2: Join Code Rooms (Cyan) */}
-            <div className="neo-box-cyan rounded-3xl p-6 space-y-6 flex flex-col justify-between snap-start shrink-0 w-[85vw] max-w-[340px]">
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                  <GraduationCap className="w-8 h-8 text-black stroke-[2.5]" />
-                </div>
-                <h3 className="text-2xl font-black uppercase text-black">
-                  Join Code Rooms
-                </h3>
-                <p className="text-black font-bold text-sm leading-relaxed">
-                  Share quizzes seamlessly using 6-character room codes. No
-                  complex setup for takers — jump straight into testing knowledge.
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-                <span>Instant Room Codes</span>
-                <KeyRound className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Card 3: Real-Time Insights (Pink) */}
-            <div className="neo-box-pink rounded-3xl p-6 space-y-6 flex flex-col justify-between snap-start shrink-0 w-[85vw] max-w-[340px]">
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                  <BarChart3 className="w-8 h-8 text-black stroke-[2.5]" />
-                </div>
-                <h3 className="text-2xl font-black uppercase text-black">
-                  Real-Time Insights
-                </h3>
-                <p className="text-black font-bold text-sm leading-relaxed">
-                  Detailed score analytics, accuracy metrics, and
-                  question-by-question breakdowns to help you track participant
-                  progress and identify study gaps.
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-                <span>Automatic Grading</span>
-                <BarChart3 className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Card 4: Gamification & Rewards (Lime) */}
-            <div className="neo-box-lime rounded-3xl p-6 space-y-6 flex flex-col justify-between snap-start shrink-0 w-[85vw] max-w-[340px]">
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                  <Trophy className="w-8 h-8 text-black stroke-[2.5]" />
-                </div>
-                <h3 className="text-2xl font-black uppercase text-black">
-                  Gamification & Rewards
-                </h3>
-                <p className="text-black font-bold text-sm leading-relaxed">
-                  Keep learners motivated with a built-in achievement system!
-                  Unlock exclusive badges, track daily streaks, and compete for
-                  perfect scores.
-                </p>
-              </div>
-              <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-                <span>Earn Badges</span>
-                <Trophy className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Desktop 2x2 Grid (hidden on mobile) */}
-        <div className="hidden md:grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Card 1: AI Quiz Generator (Yellow) */}
           <div className="neo-box-yellow rounded-3xl p-8 space-y-6 flex flex-col justify-between hover:-translate-y-2 transition-transform">
             <div className="space-y-4">
