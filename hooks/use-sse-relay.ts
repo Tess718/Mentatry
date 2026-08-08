@@ -80,5 +80,5 @@ export function useSSERelay({ roomId, onEvent, onResync, enabled = true }: UseSS
         eventSourceRef.current.close();
       }
     };
-  }, [roomId]); // Only reconnect when roomId changes
+  }, [roomId, enabled]); // Reconnect when roomId or enabled state changes
 }

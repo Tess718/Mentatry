@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +21,40 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
   const userId = session.user.id;
   const { id: quizId } = await params;
 
+  return (
+    <div className="max-w-4xl mx-auto py-6 space-y-8">
+      <Suspense fallback={<InsightsLoadingSkeleton />}>
+        <AsyncInsightsStats quizId={quizId} userId={userId} />
+      </Suspense>
+    </div>
+  );
+}
+
+function InsightsLoadingSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse">
+      <div className="flex justify-between gap-4">
+        <div className="h-10 w-32 bg-slate-200 rounded" />
+      </div>
+      <div className="neo-box p-8 bg-cyan-300/50 space-y-2">
+        <div className="h-6 w-48 bg-cyan-400/50 rounded" />
+        <div className="h-10 w-2/3 bg-cyan-400/50 rounded" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="h-32 bg-slate-200 rounded-2xl" />
+        <div className="h-32 bg-slate-200 rounded-2xl" />
+        <div className="h-32 bg-slate-200 rounded-2xl" />
+      </div>
+      <div className="space-y-4">
+        <div className="h-8 w-64 bg-slate-200 rounded" />
+        <div className="h-24 bg-slate-200 rounded-2xl" />
+        <div className="h-24 bg-slate-200 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+async function AsyncInsightsStats({ quizId, userId }: { quizId: string; userId: string }) {
   const quizAuth = await prisma.quiz.findUnique({
     where: { id: quizId },
     select: { ownerId: true },
@@ -72,8 +107,6 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
     notFound();
   }
 
-
-
   // Aggregate Metrics Computation
   const totalAttempts = quiz.attempts.length;
   const uniqueTakers = new Set(quiz.attempts.map((a) => a.userId)).size;
@@ -114,7 +147,7 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
   const sortedByDifficulty = [...questionStats].sort((a, b) => b.missRate - a.missRate);
 
   return (
-    <div className="max-w-4xl mx-auto py-6 space-y-8">
+    <>
       {/* Top Bar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <Link href="/quizzes" className="neo-btn neo-btn-white text-xs py-2 px-3 self-start">
@@ -244,6 +277,6 @@ export default async function QuizOwnerInsightsPage({ params }: PageProps) {
         <h3 className="text-xl font-black uppercase text-black">Recent Attempts</h3>
         <StudentAttemptsList attempts={quiz.attempts} questions={quiz.questions} />
       </div>
-    </div>
+    </>
   );
 }

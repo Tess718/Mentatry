@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +20,58 @@ export default async function QuizResultsPage({ params, searchParams }: PageProp
   const { id: quizId, attemptId } = await params;
   const { from, roomId: queryRoomId } = await searchParams;
 
+  return (
+    <div className="max-w-4xl mx-auto py-6 space-y-8">
+      <Suspense fallback={<ResultsSkeleton />}>
+        <AsyncResults 
+          quizId={quizId} 
+          attemptId={attemptId} 
+          userId={session.user.id} 
+          from={from as string | undefined} 
+          queryRoomId={queryRoomId as string | undefined} 
+        />
+      </Suspense>
+    </div>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div className="space-y-8 animate-pulse">
+      <div className="neo-box p-8 bg-yellow-300/50 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-4 w-full">
+          <div className="h-6 w-32 bg-yellow-400/50 rounded" />
+          <div className="h-10 w-2/3 bg-yellow-400/50 rounded" />
+          <div className="h-4 w-1/2 bg-yellow-400/50 rounded" />
+        </div>
+        <div className="neo-box bg-white/50 p-6 w-44 h-32 shrink-0" />
+      </div>
+      <div className="flex gap-4">
+        <div className="h-10 w-32 bg-slate-200 rounded" />
+        <div className="h-10 w-32 bg-slate-200 rounded" />
+      </div>
+      <div className="space-y-6">
+        <div className="h-8 w-64 bg-slate-200 rounded" />
+        <div className="h-48 bg-slate-200 rounded-2xl" />
+        <div className="h-48 bg-slate-200 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+async function AsyncResults({ 
+  quizId, 
+  attemptId, 
+  userId, 
+  from, 
+  queryRoomId 
+}: { 
+  quizId: string; 
+  attemptId: string; 
+  userId: string;
+  from?: string;
+  queryRoomId?: string;
+}) {
   const attempt = await prisma.attempt.findUnique({
     where: { id: attemptId },
     include: {
@@ -40,8 +93,8 @@ export default async function QuizResultsPage({ params, searchParams }: PageProp
     notFound();
   }
 
-  const isTaker = attempt.userId === session.user.id;
-  const isOwner = attempt.quiz.ownerId === session.user.id;
+  const isTaker = attempt.userId === userId;
+  const isOwner = attempt.quiz.ownerId === userId;
 
   if (!isTaker && !isOwner) {
     return (
@@ -83,7 +136,7 @@ export default async function QuizResultsPage({ params, searchParams }: PageProp
   const answersMap = new Map(attempt.answers.map((a) => [a.questionId, a]));
 
   return (
-    <div className="max-w-4xl mx-auto py-6 space-y-8">
+    <>
       <AchievementToast />
       
       {/* Score Header Card */}
@@ -238,6 +291,6 @@ export default async function QuizResultsPage({ params, searchParams }: PageProp
           );
         })}
       </div>
-    </div>
+    </>
   );
 }

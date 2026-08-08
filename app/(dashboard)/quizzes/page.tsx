@@ -23,6 +23,40 @@ export default async function QuizzesDashboardPage() {
   const userId = session.user.id;
   const userFirstName = session.user.firstName || "Quizmaster";
 
+  return (
+    <div className="space-y-8 py-4">
+      {/* Dashboard Top Hero Welcome Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 neo-box p-6 sm:p-8 bg-amber-300 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black">
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black uppercase text-black tracking-tight leading-tight">
+            WELCOME BACK, {userFirstName}!
+          </h1>
+          <p className="text-slate-900 font-bold text-sm sm:text-base">
+            Create AI quizzes, join classroom rooms, and monitor live test performance.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+          <Link href="/quizzes/new" className="neo-btn neo-btn-lime text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>CREATE NEW QUIZ</span>
+          </Link>
+          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
+            <KeyRound className="w-4 h-4 stroke-[3]" />
+            <span>JOIN WITH CODE</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Interactive Grid & Stat Metrics wrapped in Suspense boundary for streaming */}
+      <Suspense fallback={<DashboardGridSkeleton />}>
+        <AsyncQuizGrid userId={userId} userFirstName={userFirstName} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function AsyncQuizGrid({ userId, userFirstName }: { userId: string; userFirstName: string }) {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
 
@@ -93,35 +127,5 @@ export default async function QuizzesDashboardPage() {
     };
   });
 
-  return (
-    <div className="space-y-8 py-4">
-      {/* Dashboard Top Hero Welcome Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 neo-box p-6 sm:p-8 bg-amber-300 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black">
-        <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-black uppercase text-black tracking-tight leading-tight">
-            WELCOME BACK, {userFirstName}!
-          </h1>
-          <p className="text-slate-900 font-bold text-sm sm:text-base">
-            Create AI quizzes, join classroom rooms, and monitor live test performance.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-          <Link href="/quizzes/new" className="neo-btn neo-btn-lime text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>CREATE NEW QUIZ</span>
-          </Link>
-          <Link href="/quizzes/join" className="neo-btn neo-btn-white text-sm sm:text-sm px-4 py-3 sm:py-2.5 whitespace-nowrap">
-            <KeyRound className="w-4 h-4 stroke-[3]" />
-            <span>JOIN WITH CODE</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Main Interactive Grid & Stat Metrics wrapped in Suspense boundary for streaming */}
-      <Suspense fallback={<DashboardGridSkeleton />}>
-        <DashboardQuizGrid quizzes={quizItems} userFirstName={userFirstName} />
-      </Suspense>
-    </div>
-  );
+  return <DashboardQuizGrid quizzes={quizItems} userFirstName={userFirstName} />;
 }

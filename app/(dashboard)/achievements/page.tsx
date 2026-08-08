@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -29,6 +30,35 @@ export default async function AchievementsPage() {
   }
   const userId = session.user.id;
 
+  return (
+    <div className="max-w-6xl mx-auto space-y-12">
+      <Suspense fallback={<AchievementsSkeleton />}>
+        <AsyncAchievements userId={userId} />
+      </Suspense>
+    </div>
+  );
+}
+
+function AchievementsSkeleton() {
+  return (
+    <div className="space-y-12 animate-pulse">
+      <div className="neo-box p-8 bg-amber-300/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="space-y-4 w-full">
+          <div className="h-10 w-64 bg-amber-400/50 rounded" />
+          <div className="h-6 w-96 bg-amber-400/50 rounded" />
+        </div>
+        <div className="neo-box bg-white/50 p-6 w-48 h-24 shrink-0" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="neo-box p-6 rounded-2xl h-64 bg-slate-100" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function AsyncAchievements({ userId }: { userId: string }) {
   // 1. Fetch all catalog achievements
   const allAchievements = await prisma.achievement.findMany({
     orderBy: { name: "asc" },
@@ -88,7 +118,7 @@ export default async function AchievementsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12">
+    <>
       {/* Header & Streak */}
       <div className="neo-box p-8 bg-amber-300 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8">
         <div>
@@ -161,6 +191,6 @@ export default async function AchievementsPage() {
           );
         })}
       </div>
-    </div>
+    </>
   );
 }
