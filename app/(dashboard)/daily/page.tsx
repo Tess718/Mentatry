@@ -180,7 +180,7 @@ async function AsyncDailyChallenge({ userId }: { userId: string }) {
               <div>
                 <h3 className="font-black text-xs uppercase text-slate-800 leading-none mb-1 tracking-wider">{lastResultLabel}</h3>
                 <p className="text-2xl font-black leading-none">
-                  #{lastResult.rank} <span className="text-sm font-bold text-amber-800">/ {lastResult.totalParticipants}</span>
+                  #{lastResult.rank}
                 </p>
               </div>
             </div>

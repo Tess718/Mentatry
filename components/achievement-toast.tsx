@@ -34,7 +34,7 @@ export function AchievementToast() {
   if (visibleIndexes.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-4 max-w-sm w-full">
+    <div className="fixed bottom-6 left-6 right-6 sm:left-auto sm:w-full sm:max-w-sm z-50 flex flex-col gap-4">
       {achievements.map((ach, index) => {
         if (!visibleIndexes.includes(index)) return null;
 
