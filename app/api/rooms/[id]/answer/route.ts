@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { cookies } from "next/headers";
 import { pushToRelay } from "@/lib/relay";
+import { answerRatelimit } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,6 +20,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (!guestToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { success: rateLimitOk } = await answerRatelimit.limit(guestToken);
+    if (!rateLimitOk) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
     const guest = await prisma.guestParticipant.findUnique({

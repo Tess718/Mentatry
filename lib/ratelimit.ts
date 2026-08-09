@@ -44,3 +44,30 @@ export const authRatelimit = redis
       prefix: "@upstash/ratelimit/auth",
     })
   : new MemoryRatelimit();
+
+export const joinRatelimit = redis
+  ? new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(20, "1 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/mentatry:join:ip",
+    })
+  : new MemoryRatelimit();
+
+export const roomJoinRatelimit = redis
+  ? new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(30, "10 s"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/mentatry:join:room",
+    })
+  : new MemoryRatelimit();
+
+export const answerRatelimit = redis
+  ? new Ratelimit({
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(10, "10 s"),
+      analytics: true,
+      prefix: "@upstash/ratelimit/mentatry:answer",
+    })
+  : new MemoryRatelimit();

@@ -84,14 +84,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 1: "OUR SPECIAL FEATURES FOR YOUR EDUCATION" */}
+      {/* Section 1: Features */}
       <section className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
-            OUR SPECIAL FEATURES FOR YOUR
+            POWERFUL TOOLS TO ACCELERATE YOUR
             <br className="hidden sm:block" />
             <span className="stitched-tag stitched-tag-lime rotate-[1deg] inline-block mt-4">
-              EDUCATION
+              LEARNING
             </span>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
@@ -474,11 +474,11 @@ export default function HomePage() {
       <section className="space-y-8">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight">
-            OUR PLATFORM IS{" "}
-            <span className="stitched-tag stitched-tag-cyan rotate-[-1deg] inline-block">
-              EASY
+            BEAUTIFULLY{" "}
+            <span className="stitched-tag stitched-tag-cyan rotate-[-1deg] inline-block mx-2">
+              SIMPLE
             </span>
-            TO USE <br className="hidden sm:block" /> & USEFUL FOR THE FUTURE
+            <br className="hidden sm:block" /> YET INCREDIBLY POWERFUL
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             Click through our interactive preview to experience how simple quiz

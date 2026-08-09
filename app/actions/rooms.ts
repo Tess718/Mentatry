@@ -1,13 +1,14 @@
 "use server";
 
 import { auth } from "@/auth";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { generateJoinCode } from "@/lib/utils";
 import { redis } from "@/lib/redis";
 import { checkAndAwardAchievements } from "@/lib/achievements";
 import { calculateAnswerPoints } from "@/lib/scoring";
 import { pushToRelay } from "@/lib/relay";
+import { joinRatelimit, roomJoinRatelimit, answerRatelimit } from "@/lib/ratelimit";
 
 const MAX_JOIN_CODE_RETRIES = 5;
 
@@ -93,6 +94,14 @@ export async function joinRoomAction(joinCode: string) {
   if (room.status === "ACTIVE") return { error: "This room is already in progress. Late joining is not allowed." };
   if (room.quiz.status !== "PUBLISHED") return { error: "This quiz is not published." };
 
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const { success: ipOk } = await joinRatelimit.limit(ip);
+  if (!ipOk) return { error: "Too many join attempts. Please wait a moment." };
+
+  const { success: roomOk } = await roomJoinRatelimit.limit(room.id);
+  if (!roomOk) return { error: "This room is receiving too many join requests right now. Please try again in a moment." };
+
   const existingParticipant = await prisma.roomParticipant.findUnique({
     where: { roomId_userId: { roomId: room.id, userId } },
   });
@@ -146,6 +155,14 @@ export async function joinGuestRoomAction(joinCode: string, displayName: string)
   if (room.status === "COMPLETED") return { error: "This room has already finished." };
   if (room.status === "EXPIRED") return { error: "This room has expired." };
   if (room.status === "ACTIVE") return { error: "This room is already in progress. Late joining is not allowed." };
+
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const { success: ipOk } = await joinRatelimit.limit(ip);
+  if (!ipOk) return { error: "Too many join attempts. Please wait a moment." };
+
+  const { success: roomOk } = await roomJoinRatelimit.limit(room.id);
+  if (!roomOk) return { error: "This room is receiving too many join requests right now. Please try again in a moment." };
 
   const currentCount = await prisma.guestParticipant.count({ where: { roomId: room.id } });
   
@@ -277,6 +294,9 @@ export async function submitLiveAnswerAction(roomId: string, questionId: string,
 
   const userId = session.user.id;
 
+  const { success: rateLimitOk } = await answerRatelimit.limit(userId);
+  if (!rateLimitOk) return { error: "Rate limit exceeded. Please wait a moment before answering." };
+
   const room = await prisma.room.findUnique({ where: { id: roomId }, include: { quiz: { include: { questions: true } } } });
   if (!room) return { error: "Room not found." };
   if (room.status !== "ACTIVE" || !room.startedAt) return { error: "Room is not active." };
@@ -331,6 +351,9 @@ export async function submitGuestLiveAnswerAction(roomId: string, questionId: st
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(`guest_session_${roomId}`)?.value;
   if (!sessionToken) return { error: "Unauthorized. No guest session found." };
+
+  const { success: rateLimitOk } = await answerRatelimit.limit(sessionToken);
+  if (!rateLimitOk) return { error: "Rate limit exceeded. Please wait a moment before answering." };
 
   const room = await prisma.room.findUnique({ where: { id: roomId }, include: { quiz: { include: { questions: true } } } });
   if (!room) return { error: "Room not found." };
