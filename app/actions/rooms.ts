@@ -28,7 +28,9 @@ export async function createRoomAction(quizId: string, maxParticipants?: number,
   
   const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
   if (!quiz) return { error: "Quiz not found." };
-  if (quiz.ownerId !== session.user.id) return { error: "Only the owner can host a live room." };
+  if (quiz.ownerId !== session.user.id && !quiz.isPublic) {
+    return { error: "Only the quiz owner can host a live room for private quizzes." };
+  }
   if (quiz.status !== "PUBLISHED") return { error: "Cannot host a room for a draft quiz. Please publish it first." };
 
   // Live rooms require a time limit so auto-finalization can work
