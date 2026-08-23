@@ -336,6 +336,13 @@ export async function submitAttemptAction(payload: {
     return { error: "This quiz is not published." };
   }
 
+  // Authorization Check: Future daily quizzes cannot be attempted in advance
+  const nowUtc = new Date();
+  const todayUTC = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate()));
+  if (quiz.isDailyQuiz && quiz.dailyDate && quiz.dailyDate.getTime() > todayUTC.getTime() && !isOwner) {
+    return { error: "This daily quiz is not available yet." };
+  }
+
   // Check access row
   const access = await prisma.quizAccess.findUnique({
     where: {
