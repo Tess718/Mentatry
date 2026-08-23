@@ -28,9 +28,28 @@ export default async function TakeQuizPage({ params }: PageProps) {
     notFound();
   }
 
-  // Security: only published quizzes or quizzes owned by current user can be taken
-  if (quiz.status !== "PUBLISHED" && quiz.ownerId !== session.user.id) {
-    notFound();
+  const userId = session.user.id;
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Non-owners cannot access draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    redirect("/quizzes");
+  }
+
+  // Authorization Check: Non-owners must have QuizAccess (joined via code), or be taking a Daily / Public Explore Quiz
+  if (!isOwner && !quiz.isDailyQuiz && !quiz.isPublic) {
+    const access = await prisma.quizAccess.findUnique({
+      where: {
+        quizId_userId: {
+          quizId: quiz.id,
+          userId,
+        },
+      },
+    });
+
+    if (!access) {
+      redirect("/quizzes");
+    }
   }
 
   const sanitizedQuestions = quiz.questions.map((q) => ({

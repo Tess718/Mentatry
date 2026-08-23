@@ -329,7 +329,14 @@ export async function submitAttemptAction(payload: {
     }
   }
 
-  // Ensure access row exists
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Non-owners cannot submit attempts for draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    return { error: "This quiz is not published." };
+  }
+
+  // Check access row
   const access = await prisma.quizAccess.findUnique({
     where: {
       quizId_userId: {
@@ -339,12 +346,18 @@ export async function submitAttemptAction(payload: {
     },
   });
 
+  // Authorization Check: Non-owners must have QuizAccess (joined via code), or be taking a Daily / Public Explore Quiz
+  if (!isOwner && !quiz.isDailyQuiz && !quiz.isPublic && !access) {
+    return { error: "Unauthorized. You must enter a join code to access this private quiz." };
+  }
+
+  // Ensure access row exists for authorized players
   if (!access) {
     await prisma.quizAccess.create({
       data: {
         quizId,
         userId,
-        role: quiz.ownerId === userId ? "OWNER" : "TAKER",
+        role: isOwner ? "OWNER" : "TAKER",
       },
     });
   }
