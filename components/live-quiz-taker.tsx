@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { submitLiveAnswerAction } from "@/app/actions/rooms";
-import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Timer, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Timer, Lock, Flame } from "lucide-react";
 import { useAlertModal } from "@/components/ui/use-alert-modal";
 import { useSSERelay } from "@/hooks/use-sse-relay";
 
@@ -174,7 +174,8 @@ export function LiveQuizTaker({ roomId, quizTitle, difficulty, timeLimitMinutes,
             </span>
             {liveStreak > 1 && (
               <span className="neo-badge bg-orange-500 text-white text-xs font-black animate-pulse flex items-center gap-1">
-                🔥 {liveStreak} IN A ROW
+                <Flame className="w-3.5 h-3.5 fill-white shrink-0" />
+                <span>{liveStreak} IN A ROW</span>
               </span>
             )}
           </div>

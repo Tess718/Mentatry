@@ -1,52 +1,46 @@
 import Link from "next/link";
-import { Timer, Users, Play, Sparkles, HelpCircle, ArrowRight } from "lucide-react";
+import { Timer, Users, Play, Sparkles, Flame, Compass, Globe } from "lucide-react";
 import { HostLiveButton } from "@/components/host-live-button";
 
-export interface ExploreQuizItem {
-  id: string;
-  title: string;
-  difficulty: string;
-  sourceType: string;
-  sourceContent?: string | null;
-  timeLimitMinutes: number | null;
-  joinCode?: string | null;
-  isDailyQuiz: boolean;
-  createdAt: Date;
-  owner: {
-    firstName: string | null;
-    email: string;
+interface ExploreQuizCardProps {
+  quiz: {
+    id: string;
+    title: string;
+    difficulty: string;
+    sourceType: string;
+    sourceContent: string | null;
+    timeLimitMinutes: number | null;
+    joinCode: string | null;
+    isDailyQuiz: boolean;
+    createdAt: Date;
+    owner: {
+      firstName: string | null;
+      email: string | null;
+    };
+    _count: {
+      questions: number;
+      attempts: number;
+    };
   };
-  _count: {
-    questions: number;
-    attempts: number;
-  };
+  isLoggedIn?: boolean;
+  currentUserId?: string;
 }
 
-export function ExploreQuizCard({
-  quiz,
-  isLoggedIn,
-  currentUserId,
-}: {
-  quiz: ExploreQuizItem;
-  isLoggedIn: boolean;
-  currentUserId?: string;
-}) {
-  const creatorName = quiz.owner.firstName || quiz.owner.email.split("@")[0] || "Community";
-  const isOwner = currentUserId ? currentUserId === quiz.id : false;
-
+export function ExploreQuizCard({ quiz, isLoggedIn = false, currentUserId }: ExploreQuizCardProps) {
   const difficultyBg =
     quiz.difficulty === "easy"
       ? "bg-lime-300 text-black"
       : quiz.difficulty === "medium"
       ? "bg-yellow-300 text-black"
-      : "bg-pink-400 text-black";
+      : "bg-pink-300 text-black";
 
-  const cardBorderAccent =
-    quiz.difficulty === "easy"
-      ? "hover:border-lime-400"
-      : quiz.difficulty === "medium"
-      ? "hover:border-yellow-400"
-      : "hover:border-pink-400";
+  const creatorName = quiz.owner.firstName
+    ? quiz.owner.firstName
+    : quiz.owner.email
+    ? quiz.owner.email.split("@")[0]
+    : "Community";
+
+  const isOwner = currentUserId && quiz.owner.email && currentUserId === quiz.owner.email;
 
   const playUrl = `/quizzes/${quiz.id}/take`;
 
@@ -66,11 +60,13 @@ export function ExploreQuizCard({
 
           {quiz._count.attempts > 0 ? (
             <span className="text-[11px] font-black text-black flex items-center gap-1 bg-amber-200 border-2 border-black px-2 py-0.5 rounded-lg shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-              🔥 {quiz._count.attempts} {quiz._count.attempts === 1 ? "Play" : "Plays"}
+              <Flame className="w-3.5 h-3.5 text-amber-950 fill-amber-500 shrink-0" />
+              <span>{quiz._count.attempts} {quiz._count.attempts === 1 ? "Play" : "Plays"}</span>
             </span>
           ) : (
             <span className="text-[11px] font-black text-black flex items-center gap-1 bg-lime-200 border-2 border-black px-2 py-0.5 rounded-lg shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-              <Sparkles className="w-3 h-3 text-emerald-800" /> New
+              <Sparkles className="w-3 h-3 text-emerald-800" />
+              <span>New</span>
             </span>
           )}
         </div>

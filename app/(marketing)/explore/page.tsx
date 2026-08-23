@@ -5,7 +5,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ExploreFilters } from "@/components/explore-filters";
 import { ExploreQuizCard } from "@/components/explore-quiz-card";
-import { Compass, Sparkles, PlusCircle, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { PlusCircle, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import {
+  MotionHero,
+  MotionSection,
+  MotionStaggerContainer,
+  MotionStaggerItem,
+} from "@/components/motion/motion-wrappers";
 
 export const metadata: Metadata = {
   title: "Explore Community Quizzes | Mentatry",
@@ -108,7 +114,7 @@ export default async function ExplorePage({ searchParams }: PageProps) {
   return (
     <div className="py-8 space-y-10">
       {/* Header Banner */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto">
+      <MotionHero className="text-center space-y-4 max-w-3xl mx-auto">
         <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none">
           Explore Quizzes
         </h1>
@@ -116,26 +122,29 @@ export default async function ExplorePage({ searchParams }: PageProps) {
         <p className="text-slate-400 font-bold text-sm sm:text-base max-w-xl mx-auto">
           Discover, play, and host interactive quizzes created by the Mentatry community. Pick a topic and test your skills!
         </p>
-      </div>
+      </MotionHero>
 
       {/* Filter and Search Bar */}
-      <ExploreFilters totalCount={totalCount} />
+      <MotionSection className="w-full">
+        <ExploreFilters totalCount={totalCount} />
+      </MotionSection>
 
-      {/* Quiz Grid */}
+      {/* Quiz Grid with Staggered Cascading Animation */}
       {quizzes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.06}>
           {quizzes.map((quiz) => (
-            <ExploreQuizCard
-              key={quiz.id}
-              quiz={quiz}
-              isLoggedIn={!!session?.user}
-              currentUserId={session?.user?.id}
-            />
+            <MotionStaggerItem key={quiz.id} className="h-full">
+              <ExploreQuizCard
+                quiz={quiz}
+                isLoggedIn={!!session?.user}
+                currentUserId={session?.user?.id}
+              />
+            </MotionStaggerItem>
           ))}
-        </div>
+        </MotionStaggerContainer>
       ) : (
         /* Empty State */
-        <div className="py-12 max-w-md mx-auto text-center space-y-6">
+        <MotionSection className="py-12 max-w-md mx-auto text-center space-y-6">
           <div className="neo-box p-8 bg-slate-900 border-3 border-black space-y-4 text-center">
             <div className="w-14 h-14 bg-amber-400 border-2 border-black rounded-2xl flex items-center justify-center mx-auto text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
               <HelpCircle className="w-7 h-7 stroke-[2.5]" />
@@ -154,12 +163,12 @@ export default async function ExplorePage({ searchParams }: PageProps) {
               </Link>
             </div>
           </div>
-        </div>
+        </MotionSection>
       )}
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 pt-6 border-t border-slate-800">
+        <MotionSection className="flex items-center justify-center gap-3 pt-6 border-t border-slate-800">
           {/* Previous Page */}
           <Link
             href={createPageUrl(currentPage - 1)}
@@ -196,7 +205,7 @@ export default async function ExplorePage({ searchParams }: PageProps) {
             <span>Next</span>
             <ChevronRight className="w-4 h-4 stroke-[3]" />
           </Link>
-        </div>
+        </MotionSection>
       )}
     </div>
   );
