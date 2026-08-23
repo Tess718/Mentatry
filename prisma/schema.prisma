@@ -42,6 +42,7 @@ model Quiz {
   timeLimitMinutes Int?           // null = no time limit; allowed: 5, 10, 15, 30, 60
   joinCode         String?        @unique
   isDailyQuiz      Boolean        @default(false)
+  isPublic         Boolean        @default(false)
   dailyDate        DateTime?      @unique
   createdAt        DateTime       @default(now())
 
@@ -229,6 +230,7 @@ model UserAchievement {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, achievementId])
 }
 
 model DailyLeaderboardResult {

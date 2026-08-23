@@ -2,7 +2,7 @@
  * Utility to push events to the Mentatry SSE Relay
  */
 
-export async function pushToRelay(roomId: string, payload: any) {
+export async function pushToRelay(roomId: string, payload: Record<string, unknown>) {
   const relayUrl = process.env.RELAY_INGEST_URL;
   const secret = process.env.INGEST_SECRET;
 

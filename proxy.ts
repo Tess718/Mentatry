@@ -5,17 +5,33 @@ export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  const isProtectedRoute = pathname.startsWith("/quizzes");
+  const isProtectedRoute =
+    pathname.startsWith("/quizzes") ||
+    pathname.startsWith("/daily") ||
+    pathname.startsWith("/achievements") ||
+    (pathname.startsWith("/rooms") && pathname !== "/rooms/join");
 
   if (isProtectedRoute && !isLoggedIn) {
-    return Response.redirect(new URL("/login", req.nextUrl));
+    const callbackUrl = encodeURIComponent(pathname);
+    return Response.redirect(new URL(`/login?callbackUrl=${callbackUrl}`, req.nextUrl));
   }
 
   if (isAuthRoute && isLoggedIn) {
-    return Response.redirect(new URL("/quizzes", req.nextUrl));
+    const rawCallbackUrl = req.nextUrl.searchParams.get("callbackUrl");
+    const redirectTo = (rawCallbackUrl && rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//"))
+      ? rawCallbackUrl
+      : "/quizzes";
+    return Response.redirect(new URL(redirectTo, req.nextUrl));
   }
 });
 
 export const config = {
-  matcher: ["/quizzes/:path*", "/login", "/signup"],
+  matcher: [
+    "/quizzes/:path*",
+    "/rooms/:path*",
+    "/daily/:path*",
+    "/achievements/:path*",
+    "/login",
+    "/signup",
+  ],
 };

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { Timer, Trophy, CheckCircle, HelpCircle } from "lucide-react";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { StartDailyQuizButton } from "@/components/start-daily-quiz-button";
+import { ShareScoreButton } from "@/components/share-score-modal";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -135,11 +136,22 @@ async function AsyncDailyChallenge({ userId }: { userId: string }) {
           </p>
         </div>
         
-        <div className="pt-2">
+        <div className="pt-2 flex flex-col sm:flex-row gap-3">
           {todaysAttempt ? (
-            <Link href={`/quizzes/${todayDailyQuiz.id}/results/${todaysAttempt.id}`} className="neo-btn neo-btn-white text-lg px-8 py-4 flex justify-center w-full">
-              <span>View Your Results</span>
-            </Link>
+            <>
+              <Link href={`/quizzes/${todayDailyQuiz.id}/results/${todaysAttempt.id}`} className="neo-btn neo-btn-white text-base px-6 py-3.5 flex items-center justify-center flex-1">
+                <span>View Results</span>
+              </Link>
+              <ShareScoreButton
+                attemptId={todaysAttempt.id}
+                quizTitle={todayDailyQuiz.title}
+                score={todaysAttempt.score}
+                totalQuestions={todaysAttempt.totalQuestions}
+                isDailyQuiz={true}
+                variant="black"
+                className="text-base px-6 py-3.5 flex items-center justify-center flex-1 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+              />
+            </>
           ) : (
             <StartDailyQuizButton quizId={todayDailyQuiz.id} />
           )}

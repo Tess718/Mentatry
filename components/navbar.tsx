@@ -3,7 +3,7 @@ import { ScrollHeader } from "@/components/scroll-header";
 import Avatar from "@/components/ui/avatar";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, KeyRound, Trophy } from "lucide-react";
+import { Plus, KeyRound, Trophy, Compass } from "lucide-react";
 
 export async function Navbar() {
   const session = await auth();
@@ -26,16 +26,25 @@ export async function Navbar() {
             className="w-5 h-5 md:w-6 md:h-6 object-contain shrink-0"
             priority
           />
-          <span className="font-bebas tracking-widest text-xl md:text-2xl">
+          <span className="font-bebas tracking-widest text-xl md:text-2xl hidden md:block">
             MENTATRY
           </span>
         </Link>
 
         {/* Header Right Items */}
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          {/* Explore Button — Always Visible */}
+          <Link
+            href="/explore"
+            className="neo-btn neo-btn-yellow text-xs py-1.5 md:py-2 px-2.5 md:px-3.5 whitespace-nowrap flex items-center gap-1.5 shrink-0"
+          >
+            <Compass className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Explore</span>
+          </Link>
+
           {session?.user ? (
             <>
-              {/* Dashboard Button — Always Visible */}
+              {/* Dashboard Button */}
               <Link
                 href="/quizzes"
                 className="neo-btn neo-btn-white text-xs py-1.5 md:py-2 px-2.5 md:px-3.5 whitespace-nowrap shrink-0"

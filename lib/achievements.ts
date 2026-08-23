@@ -54,56 +54,59 @@ export async function checkAndAwardAchievements(userId: string) {
     where: { attempt: { userId } }
   });
 
-  // Aggregate: Daily Streak (count unique calendar days of attempts)
+  // Aggregate: Daily Streak (count unique calendar days of attempts in UTC)
   const attemptsDates = await prisma.attempt.findMany({
     where: { userId, completedAt: { not: null } },
     select: { completedAt: true },
     orderBy: { completedAt: "desc" },
   });
   
-  // Calculate distinct calendar days (local time approximation via JS Date string manipulation)
+  // Calculate distinct calendar days (UTC to align with daily quiz dates)
   const distinctDays = new Set(
     attemptsDates.map((a) => {
       const d = new Date(a.completedAt!);
-      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
     })
   );
   
-  // Calculate longest continuous streak from today/yesterday backwards
+  // Calculate longest continuous streak from today/yesterday backwards in UTC
   let currentStreak = 0;
-  const todayDate = new Date();
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(todayDate.getDate() - 1);
+  const now = new Date();
+  const todayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
-  const todayStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
-  const yesterdayStr = `${yesterdayDate.getFullYear()}-${yesterdayDate.getMonth() + 1}-${yesterdayDate.getDate()}`;
+  const todayStr = `${todayDate.getUTCFullYear()}-${todayDate.getUTCMonth() + 1}-${todayDate.getUTCDate()}`;
+  const yesterdayStr = `${yesterdayDate.getUTCFullYear()}-${yesterdayDate.getUTCMonth() + 1}-${yesterdayDate.getUTCDate()}`;
 
-  let checkDate = new Date();
-  // If no attempt today, maybe the streak is just resting on yesterday
+  let checkDate: Date | null = null;
+  // If no attempt today, check if streak is intact from yesterday
   if (distinctDays.has(todayStr)) {
-    checkDate = todayDate;
+    checkDate = new Date(todayDate);
   } else if (distinctDays.has(yesterdayStr)) {
-    checkDate = yesterdayDate;
-  } else {
-    // Break in streak, current is 0 (or just the latest day if we were computing max, but this is current streak)
-    checkDate = null as any; 
+    checkDate = new Date(yesterdayDate);
   }
 
   if (checkDate) {
     while (true) {
-      const checkStr = `${checkDate.getFullYear()}-${checkDate.getMonth() + 1}-${checkDate.getDate()}`;
+      const checkStr = `${checkDate.getUTCFullYear()}-${checkDate.getUTCMonth() + 1}-${checkDate.getUTCDate()}`;
       if (distinctDays.has(checkStr)) {
         currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+        checkDate.setUTCDate(checkDate.getUTCDate() - 1);
       } else {
         break;
       }
     }
   }
 
+interface AchievementCriteria {
+  type: string;
+  threshold?: number;
+  maxSeconds?: number;
+}
+
   // 2. Evaluate criteria
   for (const achievement of unearned) {
-    const criteria = achievement.criteria as any;
+    const criteria = achievement.criteria as unknown as AchievementCriteria;
     let earned = false;
 
     switch (criteria.type) {
@@ -133,7 +136,7 @@ export async function checkAndAwardAchievements(userId: string) {
           where: { 
             attempt: { userId }, 
             isCorrect: true, 
-            timeTakenMs: { lte: criteria.maxSeconds * 1000 } 
+            timeTakenMs: { lte: (criteria.maxSeconds || 5) * 1000 } 
           }
         });
         
@@ -152,9 +155,10 @@ export async function checkAndAwardAchievements(userId: string) {
           },
         });
         newlyEarned.push(achievement);
-      } catch (e: any) {
+      } catch (e) {
         // Ignore P2002 (Unique constraint failed) in case of concurrent awards
-        if (e.code !== "P2002") {
+        const err = e as { code?: string };
+        if (err?.code !== "P2002") {
           console.error("Error awarding achievement", e);
         }
       }

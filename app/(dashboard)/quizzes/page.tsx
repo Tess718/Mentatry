@@ -119,6 +119,7 @@ async function AsyncQuizGrid({ userId, userFirstName }: { userId: string; userFi
       createdAt: quiz.createdAt.toISOString(),
       isOwner,
       isDailyQuiz: quiz.isDailyQuiz,
+      isPublic: quiz.isPublic,
       questionCount,
       attemptsCount: attempts.length,
       bestScore,

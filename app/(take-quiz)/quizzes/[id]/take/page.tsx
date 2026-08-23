@@ -9,12 +9,11 @@ interface PageProps {
 }
 
 export default async function TakeQuizPage({ params }: PageProps) {
+  const { id: quizId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/login");
+    redirect(`/login?callbackUrl=${encodeURIComponent(`/quizzes/${quizId}/take`)}`);
   }
-
-  const { id: quizId } = await params;
 
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },
@@ -27,6 +26,30 @@ export default async function TakeQuizPage({ params }: PageProps) {
 
   if (!quiz || quiz.questions.length === 0) {
     notFound();
+  }
+
+  const userId = session.user.id;
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Non-owners cannot access draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    redirect("/quizzes");
+  }
+
+  // Authorization Check: Non-owners must have QuizAccess (joined via code), or be taking a Daily / Public Explore Quiz
+  if (!isOwner && !quiz.isDailyQuiz && !quiz.isPublic) {
+    const access = await prisma.quizAccess.findUnique({
+      where: {
+        quizId_userId: {
+          quizId: quiz.id,
+          userId,
+        },
+      },
+    });
+
+    if (!access) {
+      redirect("/quizzes");
+    }
   }
 
   const sanitizedQuestions = quiz.questions.map((q) => ({
@@ -46,7 +69,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
       },
     });
     if (existingIncomplete) {
-      resumeWarning = "You started today's quiz earlier. Your timer is still running! Submit to record your official attempt.";
+      resumeWarning = "You started today's quiz earlier. Submit when you're ready to lock in your daily score!";
     }
   }
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { quizRatelimit } from "@/lib/ratelimit";
 import { generateQuizWithAI } from "@/lib/ai";
@@ -135,6 +136,8 @@ export async function generateQuizAction(payload: {
     return newQuiz;
   });
 
+  revalidatePath("/quizzes");
+
   return { 
     success: true, 
     quizId: quiz.id, 
@@ -157,6 +160,9 @@ export async function publishQuizAction(quizId: string) {
     data: { status: "PUBLISHED" },
   });
   
+  revalidatePath("/quizzes");
+  revalidatePath(`/quizzes/${quizId}/edit`);
+
   return { success: true };
 }
 
@@ -210,6 +216,8 @@ export async function createManualQuizAction(payload: ManualQuizInput) {
 
     return newQuiz;
   });
+
+  revalidatePath("/quizzes");
 
   return { success: true, quizId: quiz.id };
 }
@@ -290,6 +298,11 @@ export async function submitAttemptAction(payload: {
     return { error: "Quiz not found." };
   }
 
+  // Security: only allow taking published quizzes or quizzes owned by the user
+  if (quiz.status !== "PUBLISHED" && quiz.ownerId !== userId) {
+    return { error: "This quiz cannot be attempted." };
+  }
+
   // Server-side time limit enforcement
   if (quiz.timeLimitMinutes) {
     let serverStartedAtMs: number | null = null;
@@ -316,7 +329,14 @@ export async function submitAttemptAction(payload: {
     }
   }
 
-  // Ensure access row exists
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Non-owners cannot submit attempts for draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    return { error: "This quiz is not published." };
+  }
+
+  // Check access row
   const access = await prisma.quizAccess.findUnique({
     where: {
       quizId_userId: {
@@ -326,12 +346,18 @@ export async function submitAttemptAction(payload: {
     },
   });
 
+  // Authorization Check: Non-owners must have QuizAccess (joined via code), or be taking a Daily / Public Explore Quiz
+  if (!isOwner && !quiz.isDailyQuiz && !quiz.isPublic && !access) {
+    return { error: "Unauthorized. You must enter a join code to access this private quiz." };
+  }
+
+  // Ensure access row exists for authorized players
   if (!access) {
     await prisma.quizAccess.create({
       data: {
         quizId,
         userId,
-        role: quiz.ownerId === userId ? "OWNER" : "TAKER",
+        role: isOwner ? "OWNER" : "TAKER",
       },
     });
   }
@@ -431,6 +457,9 @@ export async function regenerateJoinCodeAction(quizId: string) {
     data: { joinCode: newJoinCode },
   });
 
+  revalidatePath("/quizzes");
+  revalidatePath(`/quizzes/${quizId}/insights`);
+
   return { success: true, joinCode: newJoinCode };
 }
 
@@ -459,5 +488,39 @@ export async function deleteQuizAction(quizId: string) {
     where: { id: quizId },
   });
 
+  revalidatePath("/quizzes");
+
   return { success: true };
+}
+
+export async function toggleQuizVisibilityAction(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+  });
+
+  if (!quiz) {
+    return { error: "Quiz not found." };
+  }
+
+  if (quiz.ownerId !== userId) {
+    return { error: "Only the quiz owner can change visibility." };
+  }
+
+  const updated = await prisma.quiz.update({
+    where: { id: quizId },
+    data: { isPublic: !quiz.isPublic },
+  });
+
+  revalidatePath("/quizzes");
+  revalidatePath("/explore");
+  revalidatePath(`/quizzes/${quizId}/edit`);
+
+  return { success: true, isPublic: updated.isPublic };
 }

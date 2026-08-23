@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CopyJoinCodeButton } from "@/components/copy-join-code-button";
 import { DeleteQuizButton } from "@/components/delete-quiz-button";
 import { HostLiveButton } from "@/components/host-live-button";
+import { ToggleVisibilityButton } from "@/components/toggle-visibility-button";
 import { Play, BarChart3, Trophy, History, Layers, Sparkles, Filter, CheckCircle2, UserCheck, BookOpen, Timer } from "lucide-react";
 
 export interface DashboardQuizItem {
@@ -23,6 +24,7 @@ export interface DashboardQuizItem {
   latestAttemptScore: number | null;
   latestAttemptId: string | null;
   isDailyQuiz: boolean;
+  isPublic: boolean;
 }
 
 export function DashboardQuizGrid({
@@ -197,16 +199,18 @@ export function DashboardQuizGrid({
                       {quiz.difficulty}
                     </span>
 
-                    <span
-                      className={`neo-badge ${
-                        quiz.isOwner ? "bg-black text-white" : "bg-indigo-600 text-white"
-                      }`}
-                    >
-                      {quiz.isOwner ? "OWNER" : "TAKER"}
-                    </span>
-                    {quiz.status === "DRAFT" && (
-                      <span className="neo-badge bg-red-400 text-white">DRAFT</span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`neo-badge ${
+                          quiz.isOwner ? "bg-black text-white" : "bg-indigo-600 text-white"
+                        }`}
+                      >
+                        {quiz.isOwner ? "OWNER" : "TAKER"}
+                      </span>
+                      {quiz.status === "DRAFT" && (
+                        <span className="neo-badge bg-red-400 text-white">DRAFT</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Quiz Title */}
@@ -230,10 +234,17 @@ export function DashboardQuizGrid({
                     )}
                   </div>
 
-                  {/* Join Code Display */}
-                  {quiz.joinCode && quiz.status === "PUBLISHED" && !quiz.isDailyQuiz && (
-                    <div className="pt-1">
-                      <CopyJoinCodeButton joinCode={quiz.joinCode} />
+                  {/* Sharing & Access Bar (Join Code + Visibility on the same line) */}
+                  {quiz.status === "PUBLISHED" && !quiz.isDailyQuiz && (
+                    <div className="pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
+                      {quiz.joinCode ? (
+                        <CopyJoinCodeButton joinCode={quiz.joinCode} />
+                      ) : (
+                        <div />
+                      )}
+                      {quiz.isOwner && (
+                        <ToggleVisibilityButton quizId={quiz.id} initialIsPublic={quiz.isPublic} />
+                      )}
                     </div>
                   )}
                 </div>

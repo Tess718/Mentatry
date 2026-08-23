@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Brain, LayoutDashboard, PlusCircle, KeyRound, Home, LogOut, User, Menu, X, Sparkles, Trophy, Timer } from "lucide-react";
+import { LayoutDashboard, PlusCircle, KeyRound, LogOut, User, Menu, X, Sparkles, Trophy, Timer, Compass } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 
 export function Sidebar({
@@ -20,22 +20,17 @@ export function Sidebar({
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Close mobile drawer when route changes
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
-
-  const displayName = user?.firstName || user?.email;
-
   const navLinks = user
     ? [
         { label: "My Dashboard", href: "/quizzes", icon: LayoutDashboard, color: "hover:bg-yellow-300 hover:text-black", activeColor: "bg-yellow-400" },
+        { label: "Explore Quizzes", href: "/explore", icon: Compass, color: "hover:bg-violet-300 hover:text-black", activeColor: "bg-violet-400" },
         { label: "Daily Challenge", href: "/daily", icon: Timer, color: "hover:bg-cyan-300 hover:text-black", activeColor: "bg-cyan-400" },
         { label: "Achievements", href: "/achievements", icon: Trophy, color: "hover:bg-amber-300 hover:text-black", activeColor: "bg-amber-400" },
         { label: "Create Quiz", href: "/quizzes/new", icon: PlusCircle, color: "hover:bg-lime-300 hover:text-black", activeColor: "bg-lime-400" },
         { label: "Join Code", href: "/quizzes/join", icon: KeyRound, color: "hover:bg-pink-300 hover:text-black", activeColor: "bg-pink-400" },
       ]
     : [
+        { label: "Explore Quizzes", href: "/explore", icon: Compass, color: "hover:bg-violet-300 hover:text-black", activeColor: "bg-violet-400" },
         { label: "Join Code", href: "/quizzes/join", icon: KeyRound, color: "hover:bg-pink-300 hover:text-black", activeColor: "bg-pink-400" },
         { label: "Log In", href: "/login", icon: User, color: "hover:bg-cyan-300 hover:text-black", activeColor: "bg-cyan-400" },
         { label: "Sign Up", href: "/signup", icon: Sparkles, color: "hover:bg-pink-300 hover:text-black", activeColor: "bg-amber-400" },
@@ -72,6 +67,7 @@ export function Sidebar({
           {/* Brand Logo Header */}
           <Link
             href="/"
+            onClick={() => setIsOpen(false)}
             className="flex items-center gap-2.5 bg-amber-400 text-black px-3.5 py-2 font-black border-3 border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] rounded-xl"
           >
             <Image 
@@ -98,6 +94,7 @@ export function Sidebar({
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-extrabold text-sm uppercase transition-all border-2 ${
                     isActive
                       ? `${link.activeColor} text-black border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] translate-x-1`

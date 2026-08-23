@@ -74,7 +74,7 @@ async function AsyncAchievements({ userId }: { userId: string }) {
   // Create a map for fast lookup of earned dates
   const earnedDates = new Map(userAchievements.map((ua) => [ua.achievementId, ua.earnedAt]));
 
-  // 3. Compute Daily Streak live
+  // 3. Compute Daily Streak live in UTC
   const attemptsDates = await prisma.attempt.findMany({
     where: { userId, completedAt: { not: null } },
     select: { completedAt: true },
@@ -84,33 +84,31 @@ async function AsyncAchievements({ userId }: { userId: string }) {
   const distinctDays = new Set(
     attemptsDates.map((a) => {
       const d = new Date(a.completedAt!);
-      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
     })
   );
 
   let currentStreak = 0;
-  const todayDate = new Date();
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(todayDate.getDate() - 1);
+  const now = new Date();
+  const todayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const yesterdayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1));
 
-  const todayStr = `${todayDate.getFullYear()}-${todayDate.getMonth() + 1}-${todayDate.getDate()}`;
-  const yesterdayStr = `${yesterdayDate.getFullYear()}-${yesterdayDate.getMonth() + 1}-${yesterdayDate.getDate()}`;
+  const todayStr = `${todayDate.getUTCFullYear()}-${todayDate.getUTCMonth() + 1}-${todayDate.getUTCDate()}`;
+  const yesterdayStr = `${yesterdayDate.getUTCFullYear()}-${yesterdayDate.getUTCMonth() + 1}-${yesterdayDate.getUTCDate()}`;
 
-  let checkDate = new Date();
+  let checkDate: Date | null = null;
   if (distinctDays.has(todayStr)) {
-    checkDate = todayDate;
+    checkDate = new Date(todayDate);
   } else if (distinctDays.has(yesterdayStr)) {
-    checkDate = yesterdayDate;
-  } else {
-    checkDate = null as any;
+    checkDate = new Date(yesterdayDate);
   }
 
   if (checkDate) {
     while (true) {
-      const checkStr = `${checkDate.getFullYear()}-${checkDate.getMonth() + 1}-${checkDate.getDate()}`;
+      const checkStr = `${checkDate.getUTCFullYear()}-${checkDate.getUTCMonth() + 1}-${checkDate.getUTCDate()}`;
       if (distinctDays.has(checkStr)) {
         currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
+        checkDate.setUTCDate(checkDate.getUTCDate() - 1);
       } else {
         break;
       }

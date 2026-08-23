@@ -56,7 +56,7 @@ async function discoverFlashCandidates(ai: GoogleGenAI): Promise<string[]> {
 
     discoveredCandidates = candidates;
     return candidates;
-  } catch (err) {
+  } catch {
     discoveredCandidates = [];
     return [];
   }
@@ -195,7 +195,8 @@ CRITICAL CONSTRAINTS:
 
       // Validation failure doesn't mean the model is dead — still cache it
       verifiedModel = modelName;
-    } catch (err: any) {
+    } catch (e) {
+      const err = e as { status?: number; message?: string };
       const status = err?.status;
 
       if (status === 404) {

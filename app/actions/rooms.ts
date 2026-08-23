@@ -9,6 +9,15 @@ import { checkAndAwardAchievements } from "@/lib/achievements";
 import { calculateAnswerPoints } from "@/lib/scoring";
 import { pushToRelay } from "@/lib/relay";
 import { joinRatelimit, roomJoinRatelimit, answerRatelimit } from "@/lib/ratelimit";
+import { finalizeRoom } from "@/lib/rooms";
+
+function getClientIp(headersList: Headers): string {
+  const xForwardedFor = headersList.get("x-forwarded-for");
+  if (xForwardedFor) {
+    return xForwardedFor.split(",")[0].trim();
+  }
+  return headersList.get("x-real-ip") ?? "127.0.0.1";
+}
 
 const MAX_JOIN_CODE_RETRIES = 5;
 
@@ -19,7 +28,9 @@ export async function createRoomAction(quizId: string, maxParticipants?: number,
   
   const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
   if (!quiz) return { error: "Quiz not found." };
-  if (quiz.ownerId !== session.user.id) return { error: "Only the owner can host a live room." };
+  if (quiz.ownerId !== session.user.id && !quiz.isPublic) {
+    return { error: "Only the quiz owner can host a live room for private quizzes." };
+  }
   if (quiz.status !== "PUBLISHED") return { error: "Cannot host a room for a draft quiz. Please publish it first." };
 
   // Live rooms require a time limit so auto-finalization can work
@@ -95,7 +106,7 @@ export async function joinRoomAction(joinCode: string) {
   if (room.quiz.status !== "PUBLISHED") return { error: "This quiz is not published." };
 
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const ip = getClientIp(headersList);
   const { success: ipOk } = await joinRatelimit.limit(ip);
   if (!ipOk) return { error: "Too many join attempts. Please wait a moment." };
 
@@ -157,7 +168,7 @@ export async function joinGuestRoomAction(joinCode: string, displayName: string)
   if (room.status === "ACTIVE") return { error: "This room is already in progress. Late joining is not allowed." };
 
   const headersList = await headers();
-  const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+  const ip = getClientIp(headersList);
   const { success: ipOk } = await joinRatelimit.limit(ip);
   if (!ipOk) return { error: "Too many join attempts. Please wait a moment." };
 
@@ -401,117 +412,6 @@ export async function submitGuestLiveAnswerAction(roomId: string, questionId: st
   await pushToRelay(roomId, { type: 'answer_submitted' });
 
   return { success: true, isCorrect };
-}
-
-/** Finalizes a room by aggregating Attempts. Uses an atomic update to prevent race conditions. */
-export async function finalizeRoom(roomId: string) {
-  // 1. Atomic Guard: only transition from ACTIVE to COMPLETED. 
-  // If count === 0, another poll/request already finalized it.
-  const updateResult = await prisma.room.updateMany({
-    where: { id: roomId, status: "ACTIVE" },
-    data: { status: "COMPLETED", endedAt: new Date() },
-  });
-
-  if (updateResult.count === 0) {
-    // Already finalized or not ACTIVE. Return early.
-    return { success: true, alreadyFinalized: true };
-  }
-
-  // 2. Clear/Update Redis (fail-open)
-  if (redis) {
-    try {
-      const state: any = await redis.get(`room:${roomId}`);
-      if (state) {
-        state.status = "COMPLETED";
-        await redis.set(`room:${roomId}`, state);
-      }
-    } catch (e) {
-      console.warn("Failed to update Redis on finalizeRoom", e);
-    }
-  }
-
-  // 3. Fetch data for aggregation
-  const room = await prisma.room.findUnique({
-    where: { id: roomId },
-    include: {
-      quiz: { include: { questions: true } },
-      participants: true,
-      answers: true,
-    },
-  });
-
-  if (!room) return { error: "Room not found." };
-  if (room.isGuestMode) return { success: true };
-
-  // Aggregate Attempts for EVERY participant
-  // Even if they dropped off and answered 0 questions, we create an attempt
-  const { quiz, participants, answers } = room;
-  const totalQuestions = quiz.questions.length;
-  const timeAllowanceMs = quiz.timeLimitMinutes ? (quiz.timeLimitMinutes * 60 * 1000) / totalQuestions : 15000;
-
-  for (const participant of participants) {
-    // Find all answers submitted by this specific user in this room
-    const userAnswers = answers.filter(a => a.userId === participant.userId);
-
-    let score = 0;
-    let currentStreak = 0;
-    const attemptAnswersToCreate = [];
-
-    for (const q of quiz.questions) {
-      const uAns = userAnswers.find(a => a.questionId === q.id);
-      const isCorrect = uAns ? uAns.selectedOption === q.correctIndex : false;
-      
-      if (isCorrect) {
-        currentStreak++;
-      } else {
-        currentStreak = 0;
-      }
-
-      const points = calculateAnswerPoints(
-        isCorrect,
-        uAns?.timeTakenMs ?? null,
-        timeAllowanceMs,
-        currentStreak
-      );
-      score += points;
-
-      if (uAns) {
-        attemptAnswersToCreate.push({
-          questionId: q.id,
-          selectedIndex: uAns.selectedOption,
-          isCorrect,
-          timeTakenMs: uAns.timeTakenMs,
-        });
-      }
-    }
-
-    // Create the final Attempt record
-    await prisma.attempt.create({
-      data: {
-        userId: participant.userId,
-        quizId: quiz.id,
-        roomId: room.id,
-        score,
-        totalQuestions,
-        completedAt: new Date(),
-        answers: {
-          create: attemptAnswersToCreate,
-        },
-      },
-    });
-
-    // Check and award achievements asynchronously for each participant
-    try {
-      await checkAndAwardAchievements(participant.userId);
-    } catch (err) {
-      console.error("Failed to award achievements for user", participant.userId, err);
-    }
-  }
-
-  // Push event to relay
-  await pushToRelay(roomId, { type: 'phase_change', phase: "COMPLETED", status: "COMPLETED" });
-
-  return { success: true };
 }
 
 /** Host ends the room, locking it and aggregating Attempts */
