@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import {
-  Sparkles,
   ArrowRight,
   Brain,
   KeyRound,
@@ -9,27 +10,71 @@ import {
   GraduationCap,
   Zap,
   ArrowUpRight,
-  HelpCircle,
-  Layers,
   CheckCircle2,
-  ListOrdered,
   Trophy,
   User,
   Users,
   Timer,
   Compass,
+  Flame,
 } from "lucide-react";
 import { LandingTabShowcase } from "@/components/landing-tab-showcase";
 import { LandingFAQ } from "@/components/landing-faq";
+import { ExploreQuizCard } from "@/components/explore-quiz-card";
+import {
+  MotionSection,
+  MotionHero,
+  MotionStaggerContainer,
+  MotionStaggerItem,
+  MotionStitchedTag,
+  MotionFloatingBadge,
+  MotionCtaBox,
+} from "@/components/motion/motion-wrappers";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+
+  // Fetch top 3 trending public community quizzes for the homepage preview
+  const featuredQuizzes = await prisma.quiz.findMany({
+    where: {
+      status: "PUBLISHED",
+      isPublic: true,
+      isDailyQuiz: false,
+    },
+    orderBy: [{ attempts: { _count: "desc" } }, { createdAt: "desc" }],
+    take: 3,
+    select: {
+      id: true,
+      title: true,
+      difficulty: true,
+      sourceType: true,
+      sourceContent: true,
+      timeLimitMinutes: true,
+      joinCode: true,
+      isDailyQuiz: true,
+      createdAt: true,
+      owner: {
+        select: {
+          firstName: true,
+          email: true,
+        },
+      },
+      _count: {
+        select: {
+          questions: true,
+          attempts: true,
+        },
+      },
+    },
+  });
+
   return (
     <div className="space-y-24 py-6 sm:py-10 max-w-7xl mx-auto">
       {/* Hero Section */}
-      <section className="relative text-center space-y-8 py-6 px-4">
+      <MotionHero className="relative text-center space-y-8 py-6 px-4">
         {/* Circular Stamp Element (Top Right floating) */}
         <div className="hidden md:flex absolute top-0 right-4 lg:right-12 items-center justify-center">
-          <div className="relative w-28 h-28 flex items-center justify-center">
+          <MotionFloatingBadge className="relative w-28 h-28 flex items-center justify-center cursor-pointer">
             <svg
               className="w-full h-full animate-spin-slow"
               viewBox="0 0 100 100"
@@ -48,15 +93,18 @@ export default function HomePage() {
             <div className="absolute w-10 h-10 bg-amber-400 border-2 border-black rounded-full flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <ArrowUpRight className="w-5 h-5 text-black stroke-[3]" />
             </div>
-          </div>
+          </MotionFloatingBadge>
         </div>
 
         {/* Main Headline */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-white leading-none max-w-4xl mx-auto">
           TURN ANY TOPIC INTO AN<br className="hidden sm:block" />
-          <span className="stitched-tag stitched-tag-cyan rotate-[-2deg] my-1 inline-block mt-4">
+          <MotionStitchedTag
+            initialRotate={-2}
+            className="stitched-tag stitched-tag-cyan my-1 inline-block mt-4"
+          >
             INTERACTIVE
-          </span>{" "}
+          </MotionStitchedTag>{" "}
           QUIZ
         </h1>
 
@@ -66,46 +114,37 @@ export default function HomePage() {
           performance.
         </p>
 
-        {/* Hero CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 w-full max-w-sm sm:max-w-none mx-auto">
-          {/* Main Primary Action */}
+        {/* Clean 2-Button Hero CTA */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 pt-2 w-full max-w-sm sm:max-w-none mx-auto">
           <Link
             href="/signup"
-            className="neo-btn neo-btn-pink text-base sm:text-lg px-6 sm:px-8 py-3.5 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-2"
+            className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-3.5 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-2"
           >
             <span>GET STARTED FREE</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
-
-          {/* Secondary Actions: Compact 2-column split on Mobile, inline on Desktop */}
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full sm:w-auto sm:flex sm:items-center">
-            <Link
-              href="/explore"
-              className="neo-btn neo-btn-yellow text-xs sm:text-lg px-3.5 sm:px-8 py-3 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2"
-            >
-              <Compass className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
-              <span>EXPLORE</span>
-            </Link>
-            <Link
-              href="/rooms/join"
-              className="neo-btn neo-btn-white text-xs sm:text-lg px-3.5 sm:px-8 py-3 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2"
-            >
-              <KeyRound className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
-              <span>JOIN ROOM</span>
-            </Link>
-          </div>
+          <Link
+            href="/rooms/join"
+            className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-3.5 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-2"
+          >
+            <KeyRound className="w-5 h-5 stroke-[2.5]" />
+            <span>JOIN LIVE ROOM</span>
+          </Link>
         </div>
-      </section>
+      </MotionHero>
 
       {/* Section 1: Features */}
-      <section className="space-y-10">
+      <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             POWERFUL TOOLS TO ACCELERATE YOUR
             <br className="hidden sm:block" />
-            <span className="stitched-tag stitched-tag-lime rotate-[1deg] inline-block mt-4">
+            <MotionStitchedTag
+              initialRotate={1}
+              className="stitched-tag stitched-tag-lime inline-block mt-4"
+            >
               LEARNING
-            </span>
+            </MotionStitchedTag>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             We provide powerful tools for both creators and self-directed
@@ -113,11 +152,10 @@ export default function HomePage() {
           </p>
         </div>
 
-
-        {/* Desktop 2x2 Grid (hidden on mobile) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Desktop 2x2 Grid with Staggered Scroll Entrance */}
+        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Card 1: AI Quiz Generator (Yellow) */}
-          <div className="neo-box-yellow rounded-3xl p-8 space-y-6 flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <MotionStaggerItem className="neo-box-yellow rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <Brain className="w-8 h-8 text-black stroke-[2.5]" />
@@ -135,10 +173,10 @@ export default function HomePage() {
               <span>Instant Generation</span>
               <Zap className="w-4 h-4 fill-black" />
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Card 2: Join Code Rooms (Cyan) */}
-          <div className="neo-box-cyan rounded-3xl p-8 space-y-6 flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <MotionStaggerItem className="neo-box-cyan rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
                 <GraduationCap className="w-8 h-8 text-black stroke-[2.5]" />
@@ -155,10 +193,10 @@ export default function HomePage() {
               <span>Instant Room Codes</span>
               <KeyRound className="w-4 h-4" />
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Card 3: Real-Time Insights (Pink) */}
-          <div className="neo-box-pink rounded-3xl p-8 space-y-6 flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <MotionStaggerItem className="neo-box-pink rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
                 <BarChart3 className="w-8 h-8 text-black stroke-[2.5]" />
@@ -176,10 +214,10 @@ export default function HomePage() {
               <span>Automatic Grading</span>
               <BarChart3 className="w-4 h-4" />
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Card 4: Gamification & Rewards (Lime) */}
-          <div className="neo-box-lime rounded-3xl p-8 space-y-6 flex flex-col justify-between hover:-translate-y-2 transition-transform">
+          <MotionStaggerItem className="neo-box-lime rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
             <div className="space-y-4">
               <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
                 <Trophy className="w-8 h-8 text-black stroke-[2.5]" />
@@ -197,19 +235,66 @@ export default function HomePage() {
               <span>Earn Badges</span>
               <Trophy className="w-4 h-4" />
             </div>
-          </div>
-        </div>
-      </section>
+          </MotionStaggerItem>
+        </MotionStaggerContainer>
+      </MotionSection>
 
-      {/* Section 1.5: "THREE WAYS TO PLAY" */}
-      <section className="space-y-10">
+      {/* Section 1.5: Featured Community Quizzes Preview */}
+      {featuredQuizzes.length > 0 && (
+        <MotionSection className="space-y-10">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
+              TRENDING COMMUNITY
+              <br className="hidden sm:block" />
+              <MotionStitchedTag
+                initialRotate={-1}
+                className="stitched-tag stitched-tag-yellow inline-block mt-4"
+              >
+                QUIZZES
+              </MotionStitchedTag>
+            </h2>
+            <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
+              Jump straight into popular public quizzes created by the community, or host one live for your friends and classroom.
+            </p>
+          </div>
+
+          <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.08}>
+            {featuredQuizzes.map((quiz) => (
+              <MotionStaggerItem key={quiz.id} className="h-full">
+                <ExploreQuizCard
+                  quiz={quiz}
+                  isLoggedIn={!!session?.user}
+                  currentUserId={session?.user?.id}
+                />
+              </MotionStaggerItem>
+            ))}
+          </MotionStaggerContainer>
+
+          <div className="text-center pt-2">
+            <Link
+              href="/explore"
+              className="neo-btn neo-btn-cyan text-sm sm:text-base py-3.5 px-6 sm:px-8 inline-flex items-center gap-2"
+            >
+              <Compass className="w-5 h-5 stroke-[2.5]" />
+              <span>BROWSE ALL COMMUNITY QUIZZES</span>
+              <ArrowRight className="w-5 h-5 stroke-[3]" />
+            </Link>
+          </div>
+        </MotionSection>
+      )}
+
+      {/* Section 1.75: "THREE WAYS TO PLAY" */}
+      <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             THREE WAYS TO
             <br className="hidden sm:block" />
-            <span className="stitched-tag stitched-tag-pink rotate-[2deg] inline-block mt-4">
+            <MotionStitchedTag
+              initialRotate={2}
+              className="stitched-tag stitched-tag-pink inline-block mt-4"
+            >
               PLAY
-            </span>
+            </MotionStitchedTag>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             Whether you&apos;re studying alone, hosting a live classroom, or
@@ -217,9 +302,9 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <MotionStaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Flow 1: Solo / Async */}
-          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] border-4 border-amber-400 flex flex-col h-full">
+          <MotionStaggerItem className="neo-box bg-white p-8 rounded-3xl space-y-6 shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] border-4 border-amber-400 flex flex-col h-full">
             <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
               <User className="w-8 h-8 text-black stroke-[2.5]" />
             </div>
@@ -249,10 +334,10 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Flow 2: Live Room */}
-          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(163,230,53,1)] border-4 border-lime-400 flex flex-col h-full">
+          <MotionStaggerItem className="neo-box bg-white p-8 rounded-3xl space-y-6 shadow-[8px_8px_0px_0px_rgba(163,230,53,1)] border-4 border-lime-400 flex flex-col h-full">
             <div className="w-16 h-16 bg-lime-400 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
               <Users className="w-8 h-8 text-black stroke-[2.5]" />
             </div>
@@ -282,10 +367,10 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Flow 3: Daily Challenge */}
-          <div className="neo-box bg-white p-8 rounded-3xl space-y-6 hover:-translate-y-2 transition-transform shadow-[8px_8px_0px_0px_rgba(34,211,238,1)] border-4 border-cyan-400 flex flex-col h-full">
+          <MotionStaggerItem className="neo-box bg-white p-8 rounded-3xl space-y-6 shadow-[8px_8px_0px_0px_rgba(34,211,238,1)] border-4 border-cyan-400 flex flex-col h-full">
             <div className="w-16 h-16 bg-cyan-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
               <Timer className="w-8 h-8 text-black stroke-[2.5]" />
             </div>
@@ -315,27 +400,30 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-          </div>
-        </div>
-      </section>
+          </MotionStaggerItem>
+        </MotionStaggerContainer>
+      </MotionSection>
 
-      {/* Section 1.75: GUEST VS AUTHENTICATED MODE */}
-      <section className="space-y-10">
+      {/* Section 1.8: GUEST VS AUTHENTICATED MODE */}
+      <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             HOST ANY WAY YOU<br className="hidden sm:block" />
-            <span className="stitched-tag stitched-tag-cyan rotate-[-1deg] inline-block mt-4">
+            <MotionStitchedTag
+              initialRotate={-1}
+              className="stitched-tag stitched-tag-cyan inline-block mt-4"
+            >
               WANT
-            </span>
+            </MotionStitchedTag>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             Choose between frictionless instant-join rooms for one-off events, or authenticated tracking for your permanent classroom.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Guest Mode */}
-          <div className="neo-box rounded-3xl p-8 bg-slate-50 border-4 border-slate-300 space-y-6 hover:-translate-y-1 transition-transform flex flex-col h-full">
+          <MotionStaggerItem className="neo-box rounded-3xl p-8 bg-slate-50 border-4 border-slate-300 space-y-6 flex flex-col h-full">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-cyan-200 border-2 border-black rounded-full flex items-center justify-center shrink-0">
                 <Users className="w-7 h-7 text-black stroke-[2.5]" />
@@ -361,10 +449,10 @@ export default function HomePage() {
                 <div className="bg-cyan-400 border-2 border-black h-10 rounded-xl flex items-center justify-center text-black font-black uppercase text-xs tracking-widest hover:bg-cyan-300 transition-colors cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Join Game</div>
               </div>
             </div>
-          </div>
+          </MotionStaggerItem>
 
           {/* Authenticated Mode */}
-          <div className="neo-box rounded-3xl p-8 bg-amber-50 border-4 border-amber-300 space-y-6 hover:-translate-y-1 transition-transform shadow-[6px_6px_0px_0px_rgba(251,191,36,1)] flex flex-col h-full">
+          <MotionStaggerItem className="neo-box rounded-3xl p-8 bg-amber-50 border-4 border-amber-300 space-y-6 shadow-[6px_6px_0px_0px_rgba(251,191,36,1)] flex flex-col h-full">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-amber-400 border-2 border-black rounded-full flex items-center justify-center shrink-0">
                 <GraduationCap className="w-7 h-7 text-black stroke-[2.5]" />
@@ -400,33 +488,39 @@ export default function HomePage() {
                   </div>
                   <div className="flex-1 bg-orange-50 border-2 border-orange-200 h-12 rounded-xl flex flex-col justify-center px-3">
                     <div className="text-[9px] font-black uppercase text-orange-600 tracking-wider">Top Streak</div>
-                    <div className="font-black text-sm flex gap-1 items-center text-black"><span className="text-orange-500 text-xs">🔥</span> 5</div>
+                    <div className="font-black text-sm flex gap-1 items-center text-black">
+                      <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500 shrink-0" />
+                      <span>5</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </MotionStaggerItem>
+        </MotionStaggerContainer>
+      </MotionSection>
 
       {/* Section 2: "HOW IT WORKS" 4-Step Stepper */}
-      <section className="space-y-10">
+      <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             HOW MENTATRY
             <br className="hidden sm:block" />
-            <span className="stitched-tag stitched-tag-yellow rotate-[-1deg] inline-block mt-4">
+            <MotionStitchedTag
+              initialRotate={-1}
+              className="stitched-tag stitched-tag-yellow inline-block mt-4"
+            >
               WORKS
-            </span>
+            </MotionStitchedTag>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             From topic input to live classroom analytics in 4 simple steps.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MotionStaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.1}>
           {/* Step 1 */}
-          <div className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(250,204,21,1)]">
+          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(250,204,21,1)] h-full">
             <div className="w-10 h-10 bg-amber-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
               01
             </div>
@@ -437,10 +531,10 @@ export default function HomePage() {
               Type any subject topic (e.g. &apos;Quantum Mechanics&apos;) or
               paste raw study notes directly.
             </p>
-          </div>
+          </MotionStaggerItem>
 
           {/* Step 2 */}
-          <div className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(163,230,53,1)]">
+          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(163,230,53,1)] h-full">
             <div className="w-10 h-10 bg-lime-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
               02
             </div>
@@ -451,10 +545,10 @@ export default function HomePage() {
               AI crafts verified multiple-choice questions, options, and
               explanations instantly.
             </p>
-          </div>
+          </MotionStaggerItem>
 
           {/* Step 3 */}
-          <div className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(244,114,182,1)]">
+          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(244,114,182,1)] h-full">
             <div className="w-10 h-10 bg-pink-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
               03
             </div>
@@ -465,10 +559,10 @@ export default function HomePage() {
               Share the 6-character room code with quiz takers for one-click
               access on any device.
             </p>
-          </div>
+          </MotionStaggerItem>
 
           {/* Step 4 */}
-          <div className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(103,232,249,1)]">
+          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(103,232,249,1)] h-full">
             <div className="w-10 h-10 bg-cyan-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
               04
             </div>
@@ -479,18 +573,21 @@ export default function HomePage() {
               View real-time score analytics, question miss rates, and
               individual attempt records.
             </p>
-          </div>
-        </div>
-      </section>
+          </MotionStaggerItem>
+        </MotionStaggerContainer>
+      </MotionSection>
 
       {/* Section 3: "OUR PLATFORM IS EASY TO USE" Interactive Tab Showcase */}
-      <section className="space-y-8">
+      <MotionSection className="space-y-8">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight">
             BEAUTIFULLY{" "}
-            <span className="stitched-tag stitched-tag-cyan rotate-[-1deg] inline-block mx-2">
+            <MotionStitchedTag
+              initialRotate={-1}
+              className="stitched-tag stitched-tag-cyan inline-block mx-2"
+            >
               SIMPLE
-            </span>
+            </MotionStitchedTag>
             <br className="hidden sm:block" /> YET INCREDIBLY POWERFUL
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
@@ -501,17 +598,20 @@ export default function HomePage() {
 
         {/* Dynamic Interactive Tab Showcase */}
         <LandingTabShowcase />
-      </section>
+      </MotionSection>
 
       {/* Section 4: FREQUENTLY ASKED QUESTIONS (FAQ) */}
-      <section className="space-y-10">
+      <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             FREQUENTLY ASKED
             <br className="hidden sm:block" />
-            <span className="stitched-tag stitched-tag-pink rotate-[1deg] inline-block mt-4">
+            <MotionStitchedTag
+              initialRotate={1}
+              className="stitched-tag stitched-tag-pink inline-block mt-4"
+            >
               QUESTIONS
-            </span>
+            </MotionStitchedTag>
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             Everything you need to know about Mentatry AI quiz creation and
@@ -520,19 +620,22 @@ export default function HomePage() {
         </div>
 
         <LandingFAQ />
-      </section>
+      </MotionSection>
 
       {/* Section 5: "LET'S UNLOCK YOUR POTENTIAL" CTA Box */}
-      <section className="relative neo-box bg-white rounded-3xl p-8 sm:p-14 text-black text-center space-y-6 overflow-hidden shadow-[12px_12px_0px_0px_rgba(250,204,21,1)]">
+      <MotionCtaBox className="relative neo-box bg-white rounded-3xl p-8 sm:p-14 text-black text-center space-y-6 overflow-hidden shadow-[12px_12px_0px_0px_rgba(250,204,21,1)]">
         <div className="inline-flex items-center gap-2 bg-slate-900 text-white font-black text-xs uppercase px-4 py-1.5 rounded-full border-2 border-black">
           <Rocket className="w-4 h-4 text-amber-300" /> READY TO GET STARTED?
         </div>
 
         <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-black">
           LET&apos;S UNLOCK YOUR{" "}
-          <span className="stitched-tag stitched-tag-pink rotate-[2deg] inline-block">
+          <MotionStitchedTag
+            initialRotate={2}
+            className="stitched-tag stitched-tag-pink inline-block"
+          >
             POTENTIAL
-          </span>
+          </MotionStitchedTag>
         </h2>
 
         <p className="text-slate-800 font-extrabold text-base sm:text-lg max-w-2xl mx-auto">
@@ -549,13 +652,13 @@ export default function HomePage() {
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
           <Link
-            href="/quizzes/join"
+            href="/rooms/join"
             className="neo-btn neo-btn-lime text-base sm:text-lg px-8 py-4 w-full sm:w-auto"
           >
             <span>JOIN A QUIZ NOW</span>
           </Link>
         </div>
-      </section>
+      </MotionCtaBox>
     </div>
   );
 }
