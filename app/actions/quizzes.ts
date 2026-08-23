@@ -290,6 +290,39 @@ export async function submitAttemptAction(payload: {
     return { error: "Quiz not found." };
   }
 
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Non-owners cannot submit attempts for draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    return { error: "This quiz is not published." };
+  }
+
+  // Check access row
+  const access = await prisma.quizAccess.findUnique({
+    where: {
+      quizId_userId: {
+        quizId,
+        userId,
+      },
+    },
+  });
+
+  // Authorization Check: Non-owners must have QuizAccess (joined via code) or be taking a Daily Quiz
+  if (!isOwner && !quiz.isDailyQuiz && !access) {
+    return { error: "Unauthorized. You must join this quiz first." };
+  }
+
+  // Ensure owner access row exists if missing
+  if (isOwner && !access) {
+    await prisma.quizAccess.create({
+      data: {
+        quizId,
+        userId,
+        role: "OWNER",
+      },
+    });
+  }
+
   // Server-side time limit enforcement
   if (quiz.timeLimitMinutes) {
     let serverStartedAtMs: number | null = null;
@@ -314,26 +347,6 @@ export async function submitAttemptAction(payload: {
     if (redis) {
       await redis.del(`solo:${userId}:${quizId}`);
     }
-  }
-
-  // Ensure access row exists
-  const access = await prisma.quizAccess.findUnique({
-    where: {
-      quizId_userId: {
-        quizId,
-        userId,
-      },
-    },
-  });
-
-  if (!access) {
-    await prisma.quizAccess.create({
-      data: {
-        quizId,
-        userId,
-        role: quiz.ownerId === userId ? "OWNER" : "TAKER",
-      },
-    });
   }
 
   // Server-side scoring computation: NEVER trust client-reported score!

@@ -29,6 +29,30 @@ export default async function TakeQuizPage({ params }: PageProps) {
     notFound();
   }
 
+  const userId = session.user.id;
+  const isOwner = quiz.ownerId === userId;
+
+  // Authorization Check: Only owners can access draft quizzes
+  if (quiz.status !== "PUBLISHED" && !isOwner) {
+    redirect("/quizzes");
+  }
+
+  // Authorization Check: Non-owners must have QuizAccess (joined via code) or be taking a Daily Quiz
+  if (!isOwner && !quiz.isDailyQuiz) {
+    const access = await prisma.quizAccess.findUnique({
+      where: {
+        quizId_userId: {
+          quizId: quiz.id,
+          userId,
+        },
+      },
+    });
+
+    if (!access) {
+      redirect("/quizzes");
+    }
+  }
+
   const sanitizedQuestions = quiz.questions.map((q) => ({
     id: q.id,
     text: q.text,
