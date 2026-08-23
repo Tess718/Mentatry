@@ -25,10 +25,18 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+function getClientIp(headersList: Headers): string {
+  const xForwardedFor = headersList.get("x-forwarded-for");
+  if (xForwardedFor) {
+    return xForwardedFor.split(",")[0].trim();
+  }
+  return headersList.get("x-real-ip") ?? "127.0.0.1";
+}
+
 export async function signupAction(prevState: any, formData: FormData) {
   try {
     const headersList = await headers();
-    const ip = headersList.get("x-forwarded-for") ?? "127.0.0.1";
+    const ip = getClientIp(headersList);
     const { success: rateLimitSuccess } = await authRatelimit.limit(ip);
     
     if (!rateLimitSuccess) {
@@ -67,10 +75,15 @@ export async function signupAction(prevState: any, formData: FormData) {
       },
     });
 
+    const rawCallbackUrl = (formData.get("callbackUrl") as string) || "/quizzes";
+    const redirectTo = (rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//"))
+      ? rawCallbackUrl
+      : "/quizzes";
+
     await signIn("credentials", {
       email,
       password: validated.data.password,
-      redirectTo: "/quizzes",
+      redirectTo,
     });
 
     return { success: true };
@@ -89,7 +102,7 @@ export async function signupAction(prevState: any, formData: FormData) {
 export async function loginAction(prevState: any, formData: FormData) {
   try {
     const headersList = await headers();
-    const ip = headersList.get("x-forwarded-for") ?? "127.0.0.1";
+    const ip = getClientIp(headersList);
     const { success: rateLimitSuccess } = await authRatelimit.limit(ip);
     
     if (!rateLimitSuccess) {
@@ -98,6 +111,10 @@ export async function loginAction(prevState: any, formData: FormData) {
 
     const rawEmail = formData.get("email") as string;
     const rawPassword = formData.get("password") as string;
+    const rawCallbackUrl = (formData.get("callbackUrl") as string) || "/quizzes";
+    const redirectTo = (rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//"))
+      ? rawCallbackUrl
+      : "/quizzes";
 
     const validated = loginSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!validated.success) {
@@ -109,7 +126,7 @@ export async function loginAction(prevState: any, formData: FormData) {
     await signIn("credentials", {
       email,
       password: validated.data.password,
-      redirectTo: "/quizzes",
+      redirectTo,
     });
 
     return { success: true };

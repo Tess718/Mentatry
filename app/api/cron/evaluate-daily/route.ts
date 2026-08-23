@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
-  // Validate cron secret if deployed
+  // Validate cron secret (fail-closed: require CRON_SECRET to be configured and valid)
   const authHeader = req.headers.get("authorization");
   if (
-    process.env.CRON_SECRET &&
+    !process.env.CRON_SECRET ||
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
   ) {
     return new Response("Unauthorized", { status: 401 });

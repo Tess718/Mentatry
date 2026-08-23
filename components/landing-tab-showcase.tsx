@@ -146,9 +146,9 @@ export function LandingTabShowcase() {
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="p-2.5 border-2 border-black rounded-lg bg-emerald-100 font-bold text-xs flex items-center justify-between">
-                      <span>A) Mitochondria</span>
-                      <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded font-black">
+                    <div className="p-2.5 border-2 border-black rounded-lg bg-emerald-100 font-bold text-xs flex items-center justify-between relative">
+                      <span className="text-black">A) Mitochondria</span>
+                      <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded font-black z-3 absolute right-2">
                         Correct
                       </span>
                     </div>

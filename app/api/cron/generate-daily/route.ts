@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { generateQuizWithAI } from "@/lib/ai";
 import { generateJoinCode } from "@/lib/utils";
 import { DAILY_QUIZ_TOPICS } from "@/lib/daily-topics";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
-  // Validate cron secret if deployed (to prevent unauthorized triggers)
+  // Validate cron secret (fail-closed: require CRON_SECRET to be configured and valid)
   const authHeader = req.headers.get("authorization");
   if (
-    process.env.CRON_SECRET &&
+    !process.env.CRON_SECRET ||
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
   ) {
     return new Response("Unauthorized", { status: 401 });
@@ -21,11 +23,12 @@ export async function GET(req: Request) {
     });
 
     if (!systemUser) {
+      const hashedPassword = await bcrypt.hash(crypto.randomUUID(), 10);
       systemUser = await prisma.user.create({
         data: {
           firstName: "Mentatry Daily",
           email: "system@mentatry.com",
-          password: "system_password_placeholder",
+          password: hashedPassword,
         },
       });
     }

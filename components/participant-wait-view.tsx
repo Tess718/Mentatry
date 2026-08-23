@@ -45,7 +45,7 @@ export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: 
   };
 
   useEffect(() => {
-    let interval = setInterval(async () => {
+    const interval = setInterval(async () => {
       const finalStatus = await syncState();
       if (finalStatus === "ACTIVE" || finalStatus === "COMPLETED" || finalStatus === "EXPIRED") {
         clearInterval(interval);
@@ -87,7 +87,7 @@ export function ParticipantWaitView({ roomId, baseRoute = "/rooms" }: { roomId: 
             <Loader2 className="w-12 h-12 text-black animate-spin" />
           </div>
           <h1 className="text-3xl font-black uppercase tracking-tight text-black">
-            You're in!
+            You&apos;re in!
           </h1>
           <p className="text-lg font-bold text-slate-600">
             Waiting for the host to start the quiz...

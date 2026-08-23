@@ -28,10 +28,15 @@ export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, que
   const [isPending, startTransition] = useTransition();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(() => (timeLimitMinutes ? timeLimitMinutes * 60 : null));
   const startedAtRef = useRef<string | null>(null);
   const attemptIdRef = useRef<string | null>(null);
   const autoSubmittedRef = useRef(false);
+  const userAnswersRef = useRef(userAnswers);
+
+  useEffect(() => {
+    userAnswersRef.current = userAnswers;
+  }, [userAnswers]);
 
   useEffect(() => {
     // Initialize attempt on mount
@@ -50,8 +55,6 @@ export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, que
     const now = new Date();
     startedAtRef.current = now.toISOString();
     const deadlineMs = now.getTime() + timeLimitMinutes * 60 * 1000;
-    
-    setTimeLeft(timeLimitMinutes * 60);
 
     const interval = setInterval(() => {
       const remaining = Math.max(0, Math.floor((deadlineMs - Date.now()) / 1000));
@@ -60,14 +63,26 @@ export function QuizTaker({ quizId, quizTitle, difficulty, timeLimitMinutes, que
       if (remaining === 0 && !autoSubmittedRef.current) {
         autoSubmittedRef.current = true;
         clearInterval(interval);
-        // Force submit when time runs out
-        handleSubmit(true);
+        
+        startTransition(async () => {
+          const res = await submitAttemptAction({
+            quizId,
+            userAnswers: userAnswersRef.current,
+            startedAt: startedAtRef.current || undefined,
+            attemptId: attemptIdRef.current || undefined,
+          });
+
+          if (res.error) {
+            setErrorMsg(`Time's up! ${res.error}`);
+          } else if (res.attemptId) {
+            router.push(`/quizzes/${quizId}/results/${res.attemptId}`);
+          }
+        });
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLimitMinutes]);
+  }, [quizId, router, timeLimitMinutes]);
 
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;

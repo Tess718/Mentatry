@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { finalizeRoom } from "@/app/actions/rooms";
+import { finalizeRoom } from "@/lib/rooms";
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { quizRatelimit } from "@/lib/ratelimit";
 import { generateQuizWithAI } from "@/lib/ai";
@@ -135,6 +136,8 @@ export async function generateQuizAction(payload: {
     return newQuiz;
   });
 
+  revalidatePath("/quizzes");
+
   return { 
     success: true, 
     quizId: quiz.id, 
@@ -157,6 +160,9 @@ export async function publishQuizAction(quizId: string) {
     data: { status: "PUBLISHED" },
   });
   
+  revalidatePath("/quizzes");
+  revalidatePath(`/quizzes/${quizId}/edit`);
+
   return { success: true };
 }
 
@@ -210,6 +216,8 @@ export async function createManualQuizAction(payload: ManualQuizInput) {
 
     return newQuiz;
   });
+
+  revalidatePath("/quizzes");
 
   return { success: true, quizId: quiz.id };
 }
@@ -288,6 +296,11 @@ export async function submitAttemptAction(payload: {
 
   if (!quiz) {
     return { error: "Quiz not found." };
+  }
+
+  // Security: only allow taking published quizzes or quizzes owned by the user
+  if (quiz.status !== "PUBLISHED" && quiz.ownerId !== userId) {
+    return { error: "This quiz cannot be attempted." };
   }
 
   // Server-side time limit enforcement
@@ -431,6 +444,9 @@ export async function regenerateJoinCodeAction(quizId: string) {
     data: { joinCode: newJoinCode },
   });
 
+  revalidatePath("/quizzes");
+  revalidatePath(`/quizzes/${quizId}/insights`);
+
   return { success: true, joinCode: newJoinCode };
 }
 
@@ -459,5 +475,39 @@ export async function deleteQuizAction(quizId: string) {
     where: { id: quizId },
   });
 
+  revalidatePath("/quizzes");
+
   return { success: true };
+}
+
+export async function toggleQuizVisibilityAction(quizId: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized. Please log in first." };
+  }
+
+  const userId = session.user.id;
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+  });
+
+  if (!quiz) {
+    return { error: "Quiz not found." };
+  }
+
+  if (quiz.ownerId !== userId) {
+    return { error: "Only the quiz owner can change visibility." };
+  }
+
+  const updated = await prisma.quiz.update({
+    where: { id: quizId },
+    data: { isPublic: !quiz.isPublic },
+  });
+
+  revalidatePath("/quizzes");
+  revalidatePath("/explore");
+  revalidatePath(`/quizzes/${quizId}/edit`);
+
+  return { success: true, isPublic: updated.isPublic };
 }

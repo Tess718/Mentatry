@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 interface UseSSERelayOptions {
   roomId: string;
-  onEvent: (event: any) => void;
+  onEvent: (event: Record<string, unknown>) => void;
   onResync: () => void;
   enabled?: boolean;
 }
@@ -14,14 +14,13 @@ export function useSSERelay({ roomId, onEvent, onResync, enabled = true }: UseSS
   const isMounted = useRef(true);
   const hasConnectedOnce = useRef(false);
 
-  // Store callbacks in refs so the EventSource handlers always call
-  // the latest version without needing them in the useEffect dep array.
-  // This prevents the EventSource from being torn down and reconnected
-  // on every render (since inline arrows create new function identities).
   const onEventRef = useRef(onEvent);
   const onResyncRef = useRef(onResync);
-  onEventRef.current = onEvent;
-  onResyncRef.current = onResync;
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+    onResyncRef.current = onResync;
+  }, [onEvent, onResync]);
 
   useEffect(() => {
     isMounted.current = true;

@@ -64,6 +64,7 @@ async function AsyncQuizEditor({ id, userId }: { id: string; userId: string }) {
     difficulty: quiz.difficulty,
     timeLimitMinutes: quiz.timeLimitMinutes,
     status: quiz.status,
+    isPublic: quiz.isPublic,
     questions: quiz.questions.map((q) => ({
       id: q.id,
       text: q.text,

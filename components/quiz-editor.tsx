@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateQuizAction } from "@/app/actions/quizzes-edit"; 
-import { Loader2, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { Loader2, Plus, Trash2, CheckCircle2, Globe, Lock } from "lucide-react";
 import { TIME_LIMIT_OPTIONS } from "@/lib/constants";
 
 // Defining types explicitly based on schema
@@ -21,6 +21,7 @@ interface Quiz {
   difficulty: string;
   timeLimitMinutes: number | null;
   status: string;
+  isPublic?: boolean;
   questions: Question[];
 }
 
@@ -32,13 +33,14 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
   const [title, setTitle] = useState(initialQuiz.title);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(initialQuiz.difficulty as "easy" | "medium" | "hard");
   const [timeLimit, setTimeLimit] = useState(initialQuiz.timeLimitMinutes || 0);
+  const [isPublic, setIsPublic] = useState(initialQuiz.isPublic ?? false);
   const [questions, setQuestions] = useState<Question[]>(
     initialQuiz.questions.length > 0
       ? initialQuiz.questions
       : [{ text: "", options: ["", "", "", ""], correctIndex: 0, explanation: "" }]
   );
 
-  const updateQuestion = (index: number, field: keyof Question, value: any) => {
+  const updateQuestion = <K extends keyof Question>(index: number, field: K, value: Question[K]) => {
     setQuestions((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
@@ -76,6 +78,7 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
         title,
         difficulty,
         timeLimitMinutes: timeLimit || null,
+        isPublic,
         questions,
         publish: true,
       });
@@ -132,6 +135,54 @@ export function QuizEditor({ initialQuiz }: { initialQuiz: Quiz }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Visibility Selector */}
+          <div className="space-y-2 md:col-span-2 flex flex-col pt-2 border-t border-slate-200">
+            <label className="text-sm font-bold uppercase text-black flex items-center gap-1.5">
+              <span>Quiz Visibility</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setIsPublic(false)}
+                className={`p-3.5 rounded-xl border-2 text-left flex items-start gap-3 transition-all cursor-pointer ${
+                  !isPublic
+                    ? "bg-amber-50 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] ring-2 ring-amber-400"
+                    : "bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div className={`p-2 rounded-lg border-2 border-black shrink-0 ${!isPublic ? 'bg-amber-400 text-black' : 'bg-slate-200 text-slate-600'}`}>
+                  <Lock className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-black uppercase">Private (Default)</div>
+                  <div className="text-[11px] font-semibold text-slate-600 mt-0.5">
+                    Accessible only via Join Code & Live Rooms. Hidden from Explore.
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPublic(true)}
+                className={`p-3.5 rounded-xl border-2 text-left flex items-start gap-3 transition-all cursor-pointer ${
+                  isPublic
+                    ? "bg-emerald-50 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] ring-2 ring-emerald-500"
+                    : "bg-slate-50 border-slate-300 text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <div className={`p-2 rounded-lg border-2 border-black shrink-0 ${isPublic ? 'bg-emerald-400 text-black' : 'bg-slate-200 text-slate-600'}`}>
+                  <Globe className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-black uppercase">Public on Explore</div>
+                  <div className="text-[11px] font-semibold text-slate-600 mt-0.5">
+                    Listed in the public community feed for all players to discover.
+                  </div>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -19,6 +20,7 @@ const updateQuizSchema = z.object({
   timeLimitMinutes: z.number().nullable(),
   questions: z.array(questionSchema).min(1, "Must have at least one question"),
   publish: z.boolean().optional(),
+  isPublic: z.boolean().optional(),
 });
 
 export async function updateQuizAction(payload: z.infer<typeof updateQuizSchema>) {
@@ -32,7 +34,7 @@ export async function updateQuizAction(payload: z.infer<typeof updateQuizSchema>
     return { error: validated.error.issues[0].message };
   }
 
-  const { quizId, title, difficulty, timeLimitMinutes, questions, publish } = validated.data;
+  const { quizId, title, difficulty, timeLimitMinutes, questions, publish, isPublic } = validated.data;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -62,6 +64,7 @@ export async function updateQuizAction(payload: z.infer<typeof updateQuizSchema>
             difficulty,
             timeLimitMinutes,
             ...(publish ? { status: "PUBLISHED" } : {}),
+            ...(isPublic !== undefined ? { isPublic } : {}),
           },
         })
       );
@@ -95,6 +98,10 @@ export async function updateQuizAction(payload: z.infer<typeof updateQuizSchema>
 
       await Promise.all(mutations);
     });
+
+    revalidatePath("/quizzes");
+    revalidatePath("/explore");
+    revalidatePath(`/quizzes/${quizId}/edit`);
 
     return { success: true };
   } catch (error: any) {

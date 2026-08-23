@@ -17,6 +17,7 @@ import {
   User,
   Users,
   Timer,
+  Compass,
 } from "lucide-react";
 import { LandingTabShowcase } from "@/components/landing-tab-showcase";
 import { LandingFAQ } from "@/components/landing-faq";
@@ -66,21 +67,33 @@ export default function HomePage() {
         </p>
 
         {/* Hero CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 pt-2 w-full max-w-xs sm:max-w-none mx-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-2 w-full max-w-sm sm:max-w-none mx-auto">
+          {/* Main Primary Action */}
           <Link
             href="/signup"
-            className="neo-btn neo-btn-pink text-base sm:text-lg px-8 py-4 w-full sm:w-auto"
+            className="neo-btn neo-btn-pink text-base sm:text-lg px-6 sm:px-8 py-3.5 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-2"
           >
             <span>GET STARTED FREE</span>
             <ArrowRight className="w-5 h-5 stroke-[3]" />
           </Link>
-          <Link
-            href="/rooms/join"
-            className="neo-btn neo-btn-white text-base sm:text-lg px-8 py-4 w-full sm:w-auto"
-          >
-            <KeyRound className="w-5 h-5 stroke-[2.5]" />
-            <span>JOIN LIVE ROOM</span>
-          </Link>
+
+          {/* Secondary Actions: Compact 2-column split on Mobile, inline on Desktop */}
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full sm:w-auto sm:flex sm:items-center">
+            <Link
+              href="/explore"
+              className="neo-btn neo-btn-yellow text-xs sm:text-lg px-3.5 sm:px-8 py-3 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <Compass className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
+              <span>EXPLORE</span>
+            </Link>
+            <Link
+              href="/rooms/join"
+              className="neo-btn neo-btn-white text-xs sm:text-lg px-3.5 sm:px-8 py-3 sm:py-4 w-full sm:w-auto flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <KeyRound className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5] shrink-0" />
+              <span>JOIN ROOM</span>
+            </Link>
+          </div>
         </div>
       </section>
 
