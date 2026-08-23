@@ -61,6 +61,40 @@ export function DashboardGridSkeleton() {
   );
 }
 
+export function QuizCardsGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="neo-box bg-slate-900 border-3 border-black p-6 rounded-2xl space-y-5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+        >
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="h-5 w-16 bg-slate-800 rounded-full border border-black" />
+              <div className="h-5 w-16 bg-slate-800 rounded-full border border-black" />
+            </div>
+            <div className="h-6 w-3/4 bg-slate-800 rounded" />
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-24 bg-slate-800 rounded border border-black" />
+              <div className="h-5 w-16 bg-slate-800 rounded border border-black" />
+            </div>
+          </div>
+
+          <div className="border-t-2 border-slate-800 pt-3">
+            <div className="h-12 w-full bg-slate-800 rounded-xl border border-black" />
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <div className="h-9 w-full bg-slate-800 rounded-lg border border-black" />
+            <div className="h-8 w-full bg-slate-800 rounded-lg border border-black" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function CreateQuizSkeleton() {
   return (
     <div className="max-w-4xl mx-auto py-6 space-y-6 animate-pulse">

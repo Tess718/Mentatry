@@ -10,9 +10,11 @@ import { useAlertModal } from "@/components/ui/use-alert-modal";
 export function DeleteQuizButton({
   quizId,
   quizTitle,
+  fullWidth = false,
 }: {
   quizId: string;
   quizTitle: string;
+  fullWidth?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -137,11 +139,16 @@ export function DeleteQuizButton({
       {/* Delete Trigger Button */}
       <button
         onClick={() => setShowModal(true)}
-        className="neo-btn bg-red-400 hover:bg-red-500 text-black text-xs py-2 px-3 transition-colors"
+        className={`neo-btn bg-red-400 hover:bg-red-500 text-black text-xs py-2 px-3 transition-colors ${
+          fullWidth
+            ? "w-full flex items-center justify-center gap-1.5 font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+            : ""
+        }`}
         title={`Delete "${quizTitle}"`}
         aria-label={`Delete quiz ${quizTitle}`}
       >
         <Trash2 className="w-3.5 h-3.5 stroke-[2.5]" />
+        {fullWidth && <span>Delete Quiz</span>}
       </button>
 
       {/* Render Modal into document.body using React Portal */}

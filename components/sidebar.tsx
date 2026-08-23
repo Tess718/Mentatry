@@ -25,7 +25,7 @@ export function Sidebar({
         { label: "My Dashboard", href: "/quizzes", icon: LayoutDashboard, color: "hover:bg-yellow-300 hover:text-black", activeColor: "bg-yellow-400" },
         { label: "Explore Quizzes", href: "/explore", icon: Compass, color: "hover:bg-violet-300 hover:text-black", activeColor: "bg-violet-400" },
         { label: "Daily Challenge", href: "/daily", icon: Timer, color: "hover:bg-cyan-300 hover:text-black", activeColor: "bg-cyan-400" },
-        { label: "Achievements", href: "/achievements", icon: Trophy, color: "hover:bg-amber-300 hover:text-black", activeColor: "bg-amber-400" },
+        { label: "Achievements", href: "/achievements", icon: Trophy, color: "hover:bg-white hover:text-black", activeColor: "bg-white" },
         { label: "Create Quiz", href: "/quizzes/new", icon: PlusCircle, color: "hover:bg-lime-300 hover:text-black", activeColor: "bg-lime-400" },
         { label: "Join Code", href: "/quizzes/join", icon: KeyRound, color: "hover:bg-pink-300 hover:text-black", activeColor: "bg-pink-400" },
       ]
