@@ -36,6 +36,13 @@ export default async function TakeQuizPage({ params }: PageProps) {
     redirect("/quizzes");
   }
 
+  // Authorization Check: Future daily quizzes cannot be accessed in advance
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  if (quiz.isDailyQuiz && quiz.dailyDate && quiz.dailyDate.getTime() > todayUTC.getTime() && !isOwner) {
+    redirect("/daily");
+  }
+
   // Authorization Check: Non-owners must have QuizAccess (joined via code), or be taking a Daily / Public Explore Quiz
   if (!isOwner && !quiz.isDailyQuiz && !quiz.isPublic) {
     const access = await prisma.quizAccess.findUnique({
