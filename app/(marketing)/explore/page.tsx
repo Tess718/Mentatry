@@ -131,7 +131,11 @@ export default async function ExplorePage({ searchParams }: PageProps) {
 
       {/* Quiz Grid with Staggered Cascading Animation */}
       {quizzes.length > 0 ? (
-        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.06}>
+        <MotionStaggerContainer
+          key={`explore-grid-${currentPage}-${query}-${difficulty}-${sort}`}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          staggerDelay={0.06}
+        >
           {quizzes.map((quiz) => (
             <MotionStaggerItem key={quiz.id} className="h-full">
               <ExploreQuizCard

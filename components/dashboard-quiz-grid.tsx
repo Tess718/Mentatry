@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CopyJoinCodeButton } from "@/components/copy-join-code-button";
@@ -19,9 +19,7 @@ import {
   Timer,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from "lucide-react";
-import { QuizCardsGridSkeleton } from "@/components/dashboard-skeletons";
 
 export interface DashboardQuizItem {
   id: string;
@@ -42,39 +40,64 @@ export interface DashboardQuizItem {
   isPublic: boolean;
 }
 
-export interface DashboardStats {
-  totalQuizzes: number;
-  totalCreated: number;
-  totalJoined: number;
-  totalAttempts: number;
-  avgAccuracy: number;
-}
-
-export interface DashboardPagination {
-  currentPage: number;
-  totalPages: number;
-  activeTab: "ALL" | "OWNER" | "JOINED";
-}
+const PAGE_SIZE = 9;
 
 export function DashboardQuizGrid({
   quizzes,
   userFirstName,
-  stats,
-  pagination,
 }: {
   quizzes: DashboardQuizItem[];
   userFirstName: string;
-  stats: DashboardStats;
-  pagination: DashboardPagination;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
 
-  const { activeTab, currentPage, totalPages } = pagination;
+  // Read view state from URL search parameters
+  const tabParam = (searchParams.get("tab") || "all").toLowerCase();
+  const activeTab: "ALL" | "OWNER" | "JOINED" =
+    tabParam === "owner" ? "OWNER" : tabParam === "joined" ? "JOINED" : "ALL";
 
-  // Helper to synchronize tab and page with URL Search Parameters
+  const rawPage = parseInt(searchParams.get("page") || "1", 10);
+  const currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
+
+  // Derived metric statistics across full user library (0ms, cached in memory)
+  const totalCreated = useMemo(() => quizzes.filter((q) => q.isOwner).length, [quizzes]);
+  const totalJoined = useMemo(() => quizzes.filter((q) => !q.isOwner).length, [quizzes]);
+  const totalAttempts = useMemo(() => quizzes.reduce((sum, q) => sum + q.attemptsCount, 0), [quizzes]);
+
+  const avgAccuracy = useMemo(() => {
+    let totalScoreSum = 0;
+    let totalQuestionsEvaluated = 0;
+    quizzes.forEach((q) => {
+      if (q.latestAttemptScore !== null && q.questionCount > 0) {
+        totalScoreSum += q.bestScore;
+        totalQuestionsEvaluated += q.questionCount;
+      }
+    });
+    return totalQuestionsEvaluated > 0 ? Math.round((totalScoreSum / totalQuestionsEvaluated) * 100) : 0;
+  }, [quizzes]);
+
+  // Derive visible quizzes based on URL active tab parameter instantly (0ms)
+  const filteredQuizzes = useMemo(() => {
+    switch (activeTab) {
+      case "OWNER":
+        return quizzes.filter((q) => q.isOwner);
+      case "JOINED":
+        return quizzes.filter((q) => !q.isOwner);
+      default:
+        return quizzes;
+    }
+  }, [quizzes, activeTab]);
+
+  // Derive paginated slice (0ms, instant page flips)
+  const totalPages = Math.ceil(filteredQuizzes.length / PAGE_SIZE) || 1;
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedQuizzes = useMemo(() => {
+    return filteredQuizzes.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE);
+  }, [filteredQuizzes, activePage]);
+
+  // Synchronize view state with URL parameters for bookmarking and back/forward navigation
   const updateUrl = (newTab: "ALL" | "OWNER" | "JOINED", newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -91,9 +114,7 @@ export function DashboardQuizGrid({
     }
 
     const queryString = params.toString();
-    startTransition(() => {
-      router.push(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
-    });
+    router.push(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
   };
 
   const handleFilterChange = (newFilter: "ALL" | "OWNER" | "JOINED") => {
@@ -106,7 +127,7 @@ export function DashboardQuizGrid({
 
   return (
     <div className="space-y-8">
-      {/* 4 Metric Stats Summary Cards (Computed on server via aggregate queries) */}
+      {/* 4 Metric Stats Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Metric 1: Total Active Quizzes */}
         <div className="neo-box-yellow rounded-2xl p-5 space-y-2 hover:-translate-y-1 transition-transform">
@@ -116,7 +137,7 @@ export function DashboardQuizGrid({
               <Layers className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-black">{stats.totalQuizzes}</div>
+          <div className="text-3xl sm:text-4xl font-black text-black">{quizzes.length}</div>
           <p className="text-[11px] font-bold text-slate-900">In your library</p>
         </div>
 
@@ -128,7 +149,7 @@ export function DashboardQuizGrid({
               <Sparkles className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-black">{stats.totalCreated}</div>
+          <div className="text-3xl sm:text-4xl font-black text-black">{totalCreated}</div>
           <p className="text-[11px] font-bold text-slate-900">AI & Manual Quizzes</p>
         </div>
 
@@ -140,7 +161,7 @@ export function DashboardQuizGrid({
               <History className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-black">{stats.totalAttempts}</div>
+          <div className="text-3xl sm:text-4xl font-black text-black">{totalAttempts}</div>
           <p className="text-[11px] font-bold text-slate-900">Completed test runs</p>
         </div>
 
@@ -153,7 +174,7 @@ export function DashboardQuizGrid({
             </div>
           </div>
           <div className="text-3xl sm:text-4xl font-black text-black">
-            {stats.totalAttempts > 0 ? `${stats.avgAccuracy}%` : "N/A"}
+            {totalAttempts > 0 ? `${avgAccuracy}%` : "N/A"}
           </div>
           <p className="text-[11px] font-bold text-slate-900">Average high score</p>
         </div>
@@ -166,7 +187,7 @@ export function DashboardQuizGrid({
           <h2 className="text-2xl font-black uppercase tracking-tight text-white">Your Quiz Library</h2>
         </div>
 
-        {/* Filter Buttons (Synced to URL Search Params) */}
+        {/* Filter Buttons (Synced to URL Search Params with instant 0ms derivation) */}
         <div className="flex items-center gap-2 bg-slate-900 border-2 border-black p-1 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
           <button
             onClick={() => handleFilterChange("ALL")}
@@ -176,7 +197,7 @@ export function DashboardQuizGrid({
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            All ({stats.totalQuizzes})
+            All ({quizzes.length})
           </button>
           <button
             onClick={() => handleFilterChange("OWNER")}
@@ -186,7 +207,7 @@ export function DashboardQuizGrid({
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Created ({stats.totalCreated})
+            Created ({totalCreated})
           </button>
           <button
             onClick={() => handleFilterChange("JOINED")}
@@ -196,15 +217,13 @@ export function DashboardQuizGrid({
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Joined ({stats.totalJoined})
+            Joined ({totalJoined})
           </button>
         </div>
       </div>
 
       {/* Quiz Card Grid */}
-      {isPending ? (
-        <QuizCardsGridSkeleton />
-      ) : quizzes.length === 0 ? (
+      {filteredQuizzes.length === 0 ? (
         <div className="py-12 neo-box bg-slate-900 border-3 border-black text-center p-8 space-y-4 rounded-3xl max-w-lg mx-auto">
           <div className="w-14 h-14 bg-amber-400 border-2 border-black rounded-2xl flex items-center justify-center mx-auto text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
             <Filter className="w-7 h-7 stroke-[2.5]" />
@@ -226,7 +245,7 @@ export function DashboardQuizGrid({
       ) : (
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quizzes.map((quiz) => {
+            {paginatedQuizzes.map((quiz) => {
               const hasAttempts = quiz.attemptsCount > 0;
 
               return (
@@ -392,16 +411,16 @@ export function DashboardQuizGrid({
             })}
           </div>
 
-          {/* Pagination Controls (Driven by Search Params) */}
+          {/* Pagination Controls (Derived instantly in 0ms with search params sync) */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-3 pt-6 border-t-2 border-slate-800">
               {/* Previous Page */}
               <button
                 type="button"
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage <= 1}
+                onClick={() => handlePageChange(Math.max(1, activePage - 1))}
+                disabled={activePage <= 1}
                 className={`neo-btn py-2 px-3 text-xs font-black uppercase flex items-center gap-1 cursor-pointer ${
-                  currentPage <= 1
+                  activePage <= 1
                     ? "pointer-events-none opacity-40 bg-slate-800 text-slate-400 border-slate-700"
                     : "neo-btn-white"
                 }`}
@@ -413,17 +432,17 @@ export function DashboardQuizGrid({
               {/* Page Indicators */}
               <div className="flex items-center gap-1.5 text-xs font-black text-slate-300">
                 <span className="bg-slate-900 border-2 border-black px-3 py-1.5 rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-white">
-                  Page <strong className="text-amber-400">{currentPage}</strong> of {totalPages}
+                  Page <strong className="text-amber-400">{activePage}</strong> of {totalPages}
                 </span>
               </div>
 
               {/* Next Page */}
               <button
                 type="button"
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage >= totalPages}
+                onClick={() => handlePageChange(Math.min(totalPages, activePage + 1))}
+                disabled={activePage >= totalPages}
                 className={`neo-btn py-2 px-3 text-xs font-black uppercase flex items-center gap-1 cursor-pointer ${
-                  currentPage >= totalPages
+                  activePage >= totalPages
                     ? "pointer-events-none opacity-40 bg-slate-800 text-slate-400 border-slate-700"
                     : "neo-btn-white"
                 }`}
