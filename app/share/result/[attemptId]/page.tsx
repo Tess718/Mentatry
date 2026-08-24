@@ -12,15 +12,31 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { attemptId } = await params;
+  const session = await auth();
+  const viewerId = session?.user?.id;
+
   const attempt = await prisma.attempt.findUnique({
     where: { id: attemptId },
     include: {
-      quiz: { select: { title: true } },
+      quiz: { select: { title: true, status: true, ownerId: true, isDailyQuiz: true, dailyDate: true } },
       user: { select: { firstName: true } },
     },
   });
 
   if (!attempt) {
+    return {
+      title: "Quiz Result | Mentatry",
+    };
+  }
+
+  const { quiz } = attempt;
+  const isOwnerOrTaker = !!viewerId && (attempt.userId === viewerId || quiz.ownerId === viewerId);
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const isFutureDaily = quiz.isDailyQuiz && quiz.dailyDate && quiz.dailyDate.getTime() > todayUTC.getTime();
+
+  // Security: Prevent metadata leak for unpublished or future daily quizzes if not owner/taker
+  if (!isOwnerOrTaker && (quiz.status !== "PUBLISHED" || isFutureDaily)) {
     return {
       title: "Quiz Result | Mentatry",
     };
@@ -70,7 +86,10 @@ export default async function SharedResultPage({ params }: PageProps) {
         select: {
           id: true,
           title: true,
+          status: true,
+          ownerId: true,
           isDailyQuiz: true,
+          dailyDate: true,
           difficulty: true,
           timeLimitMinutes: true,
         },
@@ -89,6 +108,17 @@ export default async function SharedResultPage({ params }: PageProps) {
   }
 
   const { quiz, user } = attempt;
+  const viewerId = session?.user?.id;
+  const isOwnerOrTaker = !!viewerId && (attempt.userId === viewerId || quiz.ownerId === viewerId);
+
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const isFutureDaily = quiz.isDailyQuiz && quiz.dailyDate && quiz.dailyDate.getTime() > todayUTC.getTime();
+
+  // Security: Enforce access control on shared results for draft/unpublished and future daily quizzes
+  if (!isOwnerOrTaker && (quiz.status !== "PUBLISHED" || isFutureDaily)) {
+    notFound();
+  }
   const percentage = attempt.totalQuestions > 0 
     ? Math.round((attempt.score / attempt.totalQuestions) * 100) 
     : 0;

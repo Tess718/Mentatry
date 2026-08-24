@@ -18,7 +18,9 @@ export async function GET(
         quiz: {
           select: {
             title: true,
+            status: true,
             isDailyQuiz: true,
+            dailyDate: true,
             difficulty: true,
           },
         },
@@ -36,6 +38,15 @@ export async function GET(
     }
 
     const { quiz, user } = attempt;
+
+    const now = new Date();
+    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const isFutureDaily = quiz.isDailyQuiz && quiz.dailyDate && quiz.dailyDate.getTime() > todayUTC.getTime();
+
+    // Security: Do not generate OG preview image for draft or unreleased daily quizzes
+    if (quiz.status !== "PUBLISHED" || isFutureDaily) {
+      return new Response("Attempt not found", { status: 404 });
+    }
     const percentage = attempt.totalQuestions > 0 
       ? Math.round((attempt.score / attempt.totalQuestions) * 100) 
       : 0;
