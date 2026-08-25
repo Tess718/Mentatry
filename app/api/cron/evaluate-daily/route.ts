@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function GET(req: Request) {
   // Validate cron secret (fail-closed: require CRON_SECRET to be configured and valid)
   const authHeader = req.headers.get("authorization");

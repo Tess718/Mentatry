@@ -198,23 +198,23 @@ async function AsyncResults({
           <span>{backText}</span>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <ShareScoreButton
-            attemptId={attemptId}
-            quizTitle={quiz.title}
-            score={attempt.score}
-            totalQuestions={attempt.totalQuestions}
-            isDailyQuiz={quiz.isDailyQuiz}
-            variant="lime"
-          />
+        {isTaker && (
+          <div className="flex flex-wrap items-center gap-3">
+            <ShareScoreButton
+              attemptId={attemptId}
+              quizTitle={quiz.title}
+              score={attempt.score}
+              totalQuestions={attempt.totalQuestions}
+              isDailyQuiz={quiz.isDailyQuiz}
+              variant="lime"
+            />
 
-          {isTaker && (
             <Link href={`/quizzes/${quizId}/take`} className="neo-btn neo-btn-yellow text-sm">
               <RotateCcw className="w-4 h-4 stroke-[3]" />
               <span>Retake Quiz</span>
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Per-Question Detailed Review */}

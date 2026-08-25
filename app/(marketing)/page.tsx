@@ -581,18 +581,18 @@ export default async function HomePage() {
       <MotionSection className="space-y-8">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight leading-tight">
-            BEAUTIFULLY{" "}
+            DESIGNED FOR{" "}
             <MotionStitchedTag
               initialRotate={-1}
               className="stitched-tag stitched-tag-cyan inline-block mx-2"
             >
-              SIMPLE
+              EFFORTLESS
             </MotionStitchedTag>
-            <br className="hidden sm:block" /> YET INCREDIBLY POWERFUL
+            <br className="hidden sm:block" /> LEARNING
           </h2>
           <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
             Click through our interactive preview to experience how simple quiz
-            creation and participation really is.
+            creation and engaging live participation really is.
           </p>
         </div>
 
