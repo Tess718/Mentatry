@@ -101,7 +101,7 @@ export default async function HomePage() {
           TURN ANY TOPIC INTO AN<br className="hidden sm:block" />
           <MotionStitchedTag
             initialRotate={-2}
-            className="stitched-tag stitched-tag-cyan my-1 inline-block mt-4"
+            className="stitched-tag stitched-tag-cyan my-1 inline-block"
           >
             INTERACTIVE
           </MotionStitchedTag>{" "}
@@ -137,11 +137,11 @@ export default async function HomePage() {
       <MotionSection className="space-y-10">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
-            POWERFUL TOOLS TO ACCELERATE YOUR
+            ACCELERATE YOUR
             <br className="hidden sm:block" />
             <MotionStitchedTag
               initialRotate={1}
-              className="stitched-tag stitched-tag-lime inline-block mt-4"
+              className="stitched-tag stitched-tag-lime inline-block"
             >
               LEARNING
             </MotionStitchedTag>
@@ -248,7 +248,7 @@ export default async function HomePage() {
               <br className="hidden sm:block" />
               <MotionStitchedTag
                 initialRotate={-1}
-                className="stitched-tag stitched-tag-yellow inline-block mt-4"
+                className="stitched-tag stitched-tag-yellow inline-block"
               >
                 QUIZZES
               </MotionStitchedTag>
@@ -276,7 +276,7 @@ export default async function HomePage() {
               className="neo-btn neo-btn-cyan text-sm sm:text-base py-3.5 px-6 sm:px-8 inline-flex items-center gap-2"
             >
               <Compass className="w-5 h-5 stroke-[2.5]" />
-              <span>BROWSE ALL COMMUNITY QUIZZES</span>
+              <span>Explore Community Quizzes</span>
               <ArrowRight className="w-5 h-5 stroke-[3]" />
             </Link>
           </div>
@@ -291,7 +291,7 @@ export default async function HomePage() {
             <br className="hidden sm:block" />
             <MotionStitchedTag
               initialRotate={2}
-              className="stitched-tag stitched-tag-pink inline-block mt-4"
+              className="stitched-tag stitched-tag-pink inline-block"
             >
               PLAY
             </MotionStitchedTag>
@@ -411,7 +411,7 @@ export default async function HomePage() {
             HOST ANY WAY YOU<br className="hidden sm:block" />
             <MotionStitchedTag
               initialRotate={-1}
-              className="stitched-tag stitched-tag-cyan inline-block mt-4"
+              className="stitched-tag stitched-tag-cyan inline-block"
             >
               WANT
             </MotionStitchedTag>
@@ -508,7 +508,7 @@ export default async function HomePage() {
             <br className="hidden sm:block" />
             <MotionStitchedTag
               initialRotate={-1}
-              className="stitched-tag stitched-tag-yellow inline-block mt-4"
+              className="stitched-tag stitched-tag-yellow inline-block"
             >
               WORKS
             </MotionStitchedTag>
@@ -608,7 +608,7 @@ export default async function HomePage() {
             <br className="hidden sm:block" />
             <MotionStitchedTag
               initialRotate={1}
-              className="stitched-tag stitched-tag-pink inline-block mt-4"
+              className="stitched-tag stitched-tag-pink inline-block"
             >
               QUESTIONS
             </MotionStitchedTag>
