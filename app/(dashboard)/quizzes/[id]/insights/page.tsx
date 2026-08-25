@@ -274,7 +274,7 @@ async function AsyncInsightsStats({ quizId, userId }: { quizId: string; userId: 
 
       {/* Recent Participant Attempts List */}
       <div className="pt-6 border-t-4 border-black space-y-6">
-        <h3 className="text-xl font-black uppercase text-black">Recent Attempts</h3>
+        <h3 className="text-xl font-black uppercase text-white">Recent Attempts</h3>
         <StudentAttemptsList attempts={quiz.attempts} questions={quiz.questions} />
       </div>
     </>

@@ -100,8 +100,8 @@ export function CreateQuizSkeleton() {
     <div className="max-w-4xl mx-auto py-6 space-y-6 animate-pulse">
       {/* Title Header Skeleton */}
       <div className="space-y-2">
-        <div className="h-8 w-60 bg-slate-800 rounded" />
-        <div className="h-4 w-96 bg-slate-800 rounded" />
+        <div className="h-8 w-60 max-w-full bg-slate-800 rounded" />
+        <div className="h-4 w-full max-w-md bg-slate-800 rounded" />
       </div>
 
       {/* Tabs Bar Skeleton */}

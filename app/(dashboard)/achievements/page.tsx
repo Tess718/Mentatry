@@ -41,13 +41,13 @@ export default async function AchievementsPage() {
 
 function AchievementsSkeleton() {
   return (
-    <div className="space-y-12 animate-pulse">
-      <div className="neo-box p-8 bg-amber-300/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8">
+    <div className="space-y-8 sm:space-y-12 animate-pulse">
+      <div className="neo-box p-6 sm:p-8 bg-amber-300/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 overflow-hidden">
         <div className="space-y-4 w-full">
-          <div className="h-10 w-64 bg-amber-400/50 rounded" />
-          <div className="h-6 w-96 bg-amber-400/50 rounded" />
+          <div className="h-9 sm:h-10 w-48 sm:w-64 max-w-full bg-amber-400/50 rounded" />
+          <div className="h-5 sm:h-6 w-full max-w-md bg-amber-400/50 rounded" />
         </div>
-        <div className="neo-box bg-white/50 p-6 w-48 h-24 shrink-0" />
+        <div className="neo-box bg-white/50 p-6 w-full sm:w-48 h-24 shrink-0" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
