@@ -15,12 +15,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const attempt = await prisma.attempt.findUnique({
     where: { id: attemptId },
     include: {
-      quiz: { select: { title: true } },
+      quiz: { select: { title: true, status: true } },
       user: { select: { firstName: true } },
     },
   });
 
-  if (!attempt) {
+  if (!attempt || attempt.quiz.status !== "PUBLISHED") {
     return {
       title: "Quiz Result | Mentatry",
     };
@@ -73,6 +73,7 @@ export default async function SharedResultPage({ params }: PageProps) {
           isDailyQuiz: true,
           difficulty: true,
           timeLimitMinutes: true,
+          status: true,
         },
       },
       user: {
@@ -84,7 +85,7 @@ export default async function SharedResultPage({ params }: PageProps) {
     },
   });
 
-  if (!attempt) {
+  if (!attempt || attempt.quiz.status !== "PUBLISHED") {
     notFound();
   }
 

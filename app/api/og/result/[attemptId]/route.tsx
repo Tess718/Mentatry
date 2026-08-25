@@ -20,6 +20,7 @@ export async function GET(
             title: true,
             isDailyQuiz: true,
             difficulty: true,
+            status: true,
           },
         },
         user: {
@@ -31,7 +32,7 @@ export async function GET(
       },
     });
 
-    if (!attempt) {
+    if (!attempt || attempt.quiz.status !== "PUBLISHED") {
       return new Response("Attempt not found", { status: 404 });
     }
 
