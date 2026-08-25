@@ -69,38 +69,62 @@ async function AsyncQuizGrid({
   const startOfTomorrow = new Date(startOfToday);
   startOfTomorrow.setUTCDate(startOfTomorrow.getUTCDate() + 1);
 
-  // Fetch all quizzes in user's active library in one fast query
-  const accessRecords = await prisma.quizAccess.findMany({
-    where: {
-      userId,
-      quiz: {
-        OR: [
-          { isDailyQuiz: false },
-          { isDailyQuiz: true, dailyDate: { gte: startOfToday, lt: startOfTomorrow } },
-        ],
+  // Fetch active library quizzes and lifetime user attempts in parallel
+  const [accessRecords, userAttempts] = await Promise.all([
+    prisma.quizAccess.findMany({
+      where: {
+        userId,
+        quiz: {
+          OR: [
+            { isDailyQuiz: false },
+            { isDailyQuiz: true, dailyDate: { gte: startOfToday, lt: startOfTomorrow } },
+          ],
+        },
       },
-    },
-    include: {
-      quiz: {
-        include: {
-          _count: {
-            select: { questions: true },
-          },
-          attempts: {
-            where: { userId, completedAt: { not: null } },
-            orderBy: { completedAt: "desc" },
-            select: {
-              id: true,
-              score: true,
+      include: {
+        quiz: {
+          include: {
+            _count: {
+              select: { questions: true },
+            },
+            attempts: {
+              where: { userId, completedAt: { not: null } },
+              orderBy: { completedAt: "desc" },
+              select: {
+                id: true,
+                score: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      quiz: { createdAt: "desc" },
-    },
+      orderBy: {
+        quiz: { createdAt: "desc" },
+      },
+    }),
+
+    prisma.attempt.findMany({
+      where: { userId, completedAt: { not: null } },
+      select: {
+        score: true,
+        totalQuestions: true,
+      },
+    }),
+  ]);
+
+  // Compute lifetime accuracy and attempt totals across ALL completed quizzes (including past daily challenges)
+  let totalScoreSum = 0;
+  let totalQuestionsEvaluated = 0;
+  userAttempts.forEach((a) => {
+    if (a.totalQuestions > 0) {
+      totalScoreSum += a.score;
+      totalQuestionsEvaluated += a.totalQuestions;
+    }
   });
+  const lifetimeAccuracy =
+    totalQuestionsEvaluated > 0
+      ? Math.round((totalScoreSum / totalQuestionsEvaluated) * 100)
+      : 0;
 
   const quizItems: DashboardQuizItem[] = accessRecords.map(({ role, quiz }) => {
     const isOwner = role === "OWNER" || quiz.ownerId === userId;
@@ -134,5 +158,14 @@ async function AsyncQuizGrid({
     };
   });
 
-  return <DashboardQuizGrid quizzes={quizItems} userFirstName={userFirstName} />;
+  return (
+    <DashboardQuizGrid
+      quizzes={quizItems}
+      userFirstName={userFirstName}
+      lifetimeStats={{
+        totalAttempts: userAttempts.length,
+        avgAccuracy: lifetimeAccuracy,
+      }}
+    />
+  );
 }

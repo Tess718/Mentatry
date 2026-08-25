@@ -6,6 +6,9 @@ import { DAILY_QUIZ_TOPICS } from "@/lib/daily-topics";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Allow up to 60s for AI quiz generation on Vercel
+
 export async function GET(req: Request) {
   // Validate cron secret (fail-closed: require CRON_SECRET to be configured and valid)
   const authHeader = req.headers.get("authorization");
@@ -33,12 +36,12 @@ export async function GET(req: Request) {
       });
     }
 
-    // 2. Ensure we have quizzes for the next 3 days
+    // 2. Ensure we have quizzes for today and the next 7 days ahead (solid 1-week buffer)
     const now = new Date();
     const generatedDates: string[] = [];
     const skippedDates: string[] = [];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 7; i++) {
       const targetDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + i));
       
       const existing = await prisma.quiz.findUnique({

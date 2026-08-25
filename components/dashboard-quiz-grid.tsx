@@ -45,9 +45,14 @@ const PAGE_SIZE = 9;
 export function DashboardQuizGrid({
   quizzes,
   userFirstName,
+  lifetimeStats,
 }: {
   quizzes: DashboardQuizItem[];
   userFirstName: string;
+  lifetimeStats: {
+    totalAttempts: number;
+    avgAccuracy: number;
+  };
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,19 +69,6 @@ export function DashboardQuizGrid({
   // Derived metric statistics across full user library (0ms, cached in memory)
   const totalCreated = useMemo(() => quizzes.filter((q) => q.isOwner).length, [quizzes]);
   const totalJoined = useMemo(() => quizzes.filter((q) => !q.isOwner).length, [quizzes]);
-  const totalAttempts = useMemo(() => quizzes.reduce((sum, q) => sum + q.attemptsCount, 0), [quizzes]);
-
-  const avgAccuracy = useMemo(() => {
-    let totalScoreSum = 0;
-    let totalQuestionsEvaluated = 0;
-    quizzes.forEach((q) => {
-      if (q.latestAttemptScore !== null && q.questionCount > 0) {
-        totalScoreSum += q.bestScore;
-        totalQuestionsEvaluated += q.questionCount;
-      }
-    });
-    return totalQuestionsEvaluated > 0 ? Math.round((totalScoreSum / totalQuestionsEvaluated) * 100) : 0;
-  }, [quizzes]);
 
   // Derive visible quizzes based on URL active tab parameter instantly (0ms)
   const filteredQuizzes = useMemo(() => {
@@ -161,7 +153,7 @@ export function DashboardQuizGrid({
               <History className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black text-black">{totalAttempts}</div>
+          <div className="text-3xl sm:text-4xl font-black text-black">{lifetimeStats.totalAttempts}</div>
           <p className="text-[11px] font-bold text-slate-900">Completed test runs</p>
         </div>
 
@@ -174,7 +166,7 @@ export function DashboardQuizGrid({
             </div>
           </div>
           <div className="text-3xl sm:text-4xl font-black text-black">
-            {totalAttempts > 0 ? `${avgAccuracy}%` : "N/A"}
+            {lifetimeStats.totalAttempts > 0 ? `${lifetimeStats.avgAccuracy}%` : "N/A"}
           </div>
           <p className="text-[11px] font-bold text-slate-900">Average high score</p>
         </div>
