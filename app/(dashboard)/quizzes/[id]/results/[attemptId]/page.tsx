@@ -237,7 +237,7 @@ async function AsyncResults({
             >
               {/* Question Banner */}
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="neo-badge bg-black text-white">Question #{idx + 1}</span>
+                <span className="neo-badge bg-cyan-300 text-black">Question #{idx + 1}</span>
                 {isCorrect ? (
                   <span className="neo-badge bg-lime-300 text-black flex items-center gap-1">
                     <CheckCircle className="w-3.5 h-3.5" /> Correct
@@ -294,9 +294,9 @@ async function AsyncResults({
               {question.explanation && (
                 <div className="bg-cyan-50 border-2 border-black p-3.5 text-xs text-slate-800 space-y-1">
                   <div className="font-extrabold uppercase text-cyan-900 flex items-center gap-1.5">
-                    <HelpCircle className="w-4 h-4 text-cyan-700" /> Explanation
+                    <HelpCircle className="w-4 h-4 text-cyan-700 stroke-[2.5]" /> Explanation
                   </div>
-                  <p className="font-medium leading-relaxed">{question.explanation}</p>
+                  <p className="font-semibold leading-relaxed text-slate-700">{question.explanation}</p>
                 </div>
               )}
             </div>

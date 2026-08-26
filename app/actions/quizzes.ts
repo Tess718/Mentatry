@@ -100,41 +100,47 @@ export async function generateQuizAction(payload: {
   const joinCode = generateJoinCode(6);
 
   // Database transaction: Create Quiz, Owner QuizAccess, and Question records
-  const quiz = await prisma.$transaction(async (tx) => {
-    const newQuiz = await tx.quiz.create({
-      data: {
-        ownerId: userId,
-        title: generatedQuiz.title,
-        sourceType: payload.sourceType,
-        sourceContent,
-        difficulty: payload.difficulty,
-        status: payload.skipReview ? "PUBLISHED" : "DRAFT",
-        timeLimitMinutes: validatedTimeLimit,
-        joinCode,
-      },
-    });
+  const quiz = await prisma.$transaction(
+    async (tx) => {
+      const newQuiz = await tx.quiz.create({
+        data: {
+          ownerId: userId,
+          title: generatedQuiz.title,
+          sourceType: payload.sourceType,
+          sourceContent,
+          difficulty: payload.difficulty,
+          status: payload.skipReview ? "PUBLISHED" : "DRAFT",
+          timeLimitMinutes: validatedTimeLimit,
+          joinCode,
+        },
+      });
 
-    await tx.quizAccess.create({
-      data: {
-        quizId: newQuiz.id,
-        userId: userId,
-        role: "OWNER",
-      },
-    });
+      await tx.quizAccess.create({
+        data: {
+          quizId: newQuiz.id,
+          userId: userId,
+          role: "OWNER",
+        },
+      });
 
-    await tx.question.createMany({
-      data: generatedQuiz.questions.map((q, idx) => ({
-        quizId: newQuiz.id,
-        text: q.text,
-        options: q.options,
-        correctIndex: q.correctIndex,
-        explanation: q.explanation || null,
-        order: idx + 1,
-      })),
-    });
+      await tx.question.createMany({
+        data: generatedQuiz.questions.map((q, idx) => ({
+          quizId: newQuiz.id,
+          text: q.text,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation || null,
+          order: idx + 1,
+        })),
+      });
 
-    return newQuiz;
-  });
+      return newQuiz;
+    },
+    {
+      maxWait: 10000,
+      timeout: 20000,
+    }
+  );
 
   revalidatePath("/quizzes");
 

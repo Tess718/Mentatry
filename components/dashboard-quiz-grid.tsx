@@ -387,10 +387,10 @@ export function DashboardQuizGrid({
                           <>
                             <Link
                               href={`/quizzes/${quiz.id}/insights`}
-                              className="neo-btn neo-btn-pink text-xs py-2 px-3"
+                              className="neo-btn neo-btn-pink text-xs py-2 px-3.5"
                               title="Owner Insights"
                             >
-                              <BarChart3 className="w-3.5 h-3.5 stroke-[3]" />
+                              <BarChart3 className="w-4 h-4 stroke-[2.5]" />
                             </Link>
                             <DeleteQuizButton quizId={quiz.id} quizTitle={quiz.title} />
                           </>
