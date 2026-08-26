@@ -344,13 +344,13 @@ export function StudentAttemptsList({ attempts, questions }: StudentAttemptsList
                       )}
                     </div>
 
+                  </div>
                     {/* Bottom Row: Latest Score Subtext */}
                     {hasMultiple && (
-                      <span className="text-[10px] font-black text-slate-500 pr-9">
+                      <span className="text-[10px] font-black text-slate-500">
                         Latest: {participant.latestScore}/{questions.length} ({participant.latestPercentage}%)
                       </span>
                     )}
-                  </div>
                 </div>
 
                 {/* Expandable Attempt History Drawer */}
