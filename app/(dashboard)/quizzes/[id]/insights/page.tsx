@@ -229,7 +229,7 @@ async function AsyncInsightsStats({ quizId, userId }: { quizId: string; userId: 
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="neo-badge bg-black text-white">Question #{stat.question.order}</span>
+                    <span className="neo-badge bg-cyan-300 text-black">Question #{stat.question.order}</span>
 
                     <span
                       className={`neo-badge ${

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "generate:daily": "npx tsx scripts/generate-daily.ts",
+    "evaluate:daily": "npx tsx scripts/evaluate-daily-backfill.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

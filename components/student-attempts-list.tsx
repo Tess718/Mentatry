@@ -315,7 +315,8 @@ export function StudentAttemptsList({ attempts, questions }: StudentAttemptsList
                             : "bg-pink-300 text-black"
                         }`}
                       >
-                        Best: {participant.bestScore}/{questions.length} ({participant.bestPercentage}%)
+                        {hasMultiple ? "Best: " : "Score: "}
+                        {participant.bestScore}/{questions.length} ({participant.bestPercentage}%)
                       </div>
 
                       {hasMultiple ? (
