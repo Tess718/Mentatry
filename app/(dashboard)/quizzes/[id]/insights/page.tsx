@@ -149,7 +149,7 @@ async function AsyncInsightsStats({ quizId, userId }: { quizId: string; userId: 
   return (
     <>
       {/* Top Bar Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-row sm:items-center justify-between gap-4">
         <Link href="/quizzes" className="neo-btn neo-btn-white text-xs py-2 px-3 self-start">
           <ArrowLeft className="w-4 h-4 stroke-[3]" />
           <span>Back to Quizzes</span>
