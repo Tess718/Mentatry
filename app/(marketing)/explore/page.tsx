@@ -5,12 +5,25 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ExploreFilters } from "@/components/explore-filters";
 import { ExploreQuizCard } from "@/components/explore-quiz-card";
-import { PlusCircle, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import {
+  PlusCircle,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  Compass,
+  Flame,
+  Zap,
+  Users,
+  Trophy,
+  Sparkles,
+} from "lucide-react";
 import {
   MotionHero,
   MotionSection,
   MotionStaggerContainer,
   MotionStaggerItem,
+  MotionStitchedTag,
+  MotionFloatingBadge,
 } from "@/components/motion/motion-wrappers";
 
 export const metadata: Metadata = {
@@ -112,16 +125,56 @@ export default async function ExplorePage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="py-8 space-y-10">
-      {/* Header Banner */}
-      <MotionHero className="text-center space-y-4 max-w-3xl mx-auto">
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none">
-          Explore Quizzes
+    <div className="py-6 sm:py-8 space-y-8">
+      {/* Hero Section */}
+      <MotionHero className="text-center space-y-4 max-w-3xl mx-auto px-4">
+        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white leading-none lg:pt-6">
+          EXPLORE{" "}
+          <MotionStitchedTag
+            initialRotate={1.5}
+            className="stitched-tag stitched-tag-cyan my-1 inline-block"
+          >
+            COMMUNITY
+          </MotionStitchedTag>{" "}
+          QUIZZES
         </h1>
 
         <p className="text-slate-400 font-bold text-sm sm:text-base max-w-xl mx-auto">
-          Discover, play, and host interactive quizzes created by the Mentatry community. Pick a topic and test your skills!
+          Discover, search, and take interactive quizzes created by creators worldwide.
         </p>
+
+        {/* Feature Highlights Micro-Cards - 3-Column Grid on all screen sizes */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3.5 pt-2 sm:pt-3 max-w-2xl mx-auto">
+          <div className="neo-box p-2 sm:p-3 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-lime-300 border border-black flex items-center justify-center shrink-0">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black fill-black" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs font-black uppercase text-black leading-tight truncate">Play Solo</div>
+              <div className="text-[9px] sm:text-[10px] font-bold text-slate-600 truncate">Self-paced run</div>
+            </div>
+          </div>
+
+          <div className="neo-box p-2 sm:p-3 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-300 border border-black flex items-center justify-center shrink-0">
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black stroke-[2.5]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs font-black uppercase text-black leading-tight truncate">AI & Custom</div>
+              <div className="text-[9px] sm:text-[10px] font-bold text-slate-600 truncate">Diverse topics</div>
+            </div>
+          </div>
+
+          <div className="neo-box p-2 sm:p-3 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-2.5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-pink-300 border border-black flex items-center justify-center shrink-0">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black stroke-[2.5]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] sm:text-xs font-black uppercase text-black leading-tight truncate">Host Live</div>
+              <div className="text-[9px] sm:text-[10px] font-bold text-slate-600 truncate">Room codes</div>
+            </div>
+          </div>
+        </div>
       </MotionHero>
 
       {/* Filter and Search Bar */}

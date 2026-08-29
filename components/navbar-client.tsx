@@ -49,6 +49,20 @@ export function NavbarClient({ user }: NavbarClientProps) {
     : user?.email?.split("@")[0] || "Player";
   const avatarSeed = user?.email || user?.id || "default";
 
+  const getLogoutRedirect = () => {
+    const isPublic =
+      pathname === "/" ||
+      pathname.startsWith("/explore") ||
+      pathname.startsWith("/share") ||
+      pathname.startsWith("/daily") ||
+      pathname.startsWith("/terms") ||
+      pathname.startsWith("/privacy") ||
+      pathname.includes("/take") ||
+      pathname.includes("/results");
+
+    return isPublic ? pathname : "/";
+  };
+
   // Close user dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -203,7 +217,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                         type="button"
                         onClick={async () => {
                           setIsUserMenuOpen(false);
-                          await logoutAction();
+                          await logoutAction(getLogoutRedirect());
                         }}
                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors text-left cursor-pointer"
                       >
@@ -421,7 +435,7 @@ export function NavbarClient({ user }: NavbarClientProps) {
                         type="button"
                         onClick={async () => {
                           setIsMobileMenuOpen(false);
-                          await logoutAction();
+                          await logoutAction(getLogoutRedirect());
                         }}
                         className="w-full p-2.5 bg-red-950/40 text-red-400 border-2 border-red-800 rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 cursor-pointer hover:bg-red-900/60 active:scale-98 transition-all"
                       >

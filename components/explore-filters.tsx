@@ -68,7 +68,7 @@ export function ExploreFilters({
           {searchTerm && (
             <button
               onClick={clearSearch}
-              className="absolute right-3.5 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="absolute right-3.5 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Clear search query"
             >
               <X className="w-4 h-4" />
@@ -78,15 +78,15 @@ export function ExploreFilters({
       </div>
 
       {/* Filter and Sort Controls Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b-2 border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b-2 border-slate-800 pb-5">
         {/* Difficulty Pills */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs font-black uppercase text-slate-400 mr-1 flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="text-xs font-black uppercase text-slate-400 mr-1 flex items-center gap-1.5 shrink-0">
             <SlidersHorizontal className="w-3.5 h-3.5" /> Difficulty:
           </span>
 
           {[
-            { id: "all", label: "All", badgeClass: "bg-slate-800 text-white hover:bg-slate-700", activeClass: "bg-white text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" },
+            { id: "all", label: "All", badgeClass: "bg-slate-800 text-slate-300 hover:bg-slate-700", activeClass: "bg-white text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" },
             { id: "easy", label: "Easy", badgeClass: "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-700", activeClass: "bg-lime-300 text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" },
             { id: "medium", label: "Medium", badgeClass: "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-700", activeClass: "bg-yellow-300 text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" },
             { id: "hard", label: "Hard", badgeClass: "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-700", activeClass: "bg-pink-400 text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" },
@@ -95,8 +95,9 @@ export function ExploreFilters({
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => updateParams({ difficulty: tab.id, page: null })}
-                className={`text-xs px-3 py-1.5 rounded-xl font-bold uppercase transition-all ${
+                className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-xl font-bold uppercase transition-all cursor-pointer ${
                   isActive ? tab.activeClass : tab.badgeClass
                 }`}
               >
@@ -107,32 +108,33 @@ export function ExploreFilters({
         </div>
 
         {/* Sort Controls & Counter */}
-        <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t border-slate-800/50 sm:border-0">
           {/* Result Count */}
-          <span className="text-xs font-bold text-slate-400">
-            {totalCount} {totalCount === 1 ? "quiz" : "quizzes"} found
+          <span className="text-xs font-bold text-slate-400 shrink-0">
+            {totalCount} {totalCount === 1 ? "quiz" : "quizzes"}
           </span>
 
-          {/* Sort Selector */}
+          {/* Sort Selector with visible text labels on all devices */}
           <div className="flex items-center gap-1 bg-slate-900 border-2 border-black rounded-xl p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             {[
-              { id: "popular", label: "Popular", icon: Flame, color: "text-amber-400" },
-              { id: "newest", label: "Newest", icon: Sparkles, color: "text-lime-400" },
+              { id: "popular", label: "Popular", icon: Flame },
+              { id: "newest", label: "Newest", icon: Sparkles },
             ].map((sortOption) => {
               const isSelected = currentSort === sortOption.id;
               const Icon = sortOption.icon;
               return (
                 <button
                   key={sortOption.id}
+                  type="button"
                   onClick={() => updateParams({ sort: sortOption.id, page: null })}
-                  className={`flex items-center gap-1.5 text-xs font-black uppercase px-2.5 py-1 rounded-lg transition-all ${
+                  className={`flex items-center gap-1.5 text-xs font-black uppercase px-2.5 sm:px-3 py-1 rounded-lg transition-all cursor-pointer ${
                     isSelected
                       ? "bg-amber-400 text-black border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                       : "text-slate-400 hover:text-white"
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-black' : sortOption.color}`} />
-                  <span className="hidden sm:inline">{sortOption.label}</span>
+                  <Icon className={`w-3.5 h-3.5 ${isSelected ? "text-black fill-black" : "text-slate-400"}`} />
+                  <span>{sortOption.label}</span>
                 </button>
               );
             })}

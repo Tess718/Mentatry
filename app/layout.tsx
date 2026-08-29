@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body className="grid-bg-dark text-white flex flex-col min-h-screen">
         <main className="flex-1 w-full min-h-screen">
           {children}

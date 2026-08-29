@@ -134,7 +134,7 @@ export default async function HomePage() {
       </MotionHero>
 
       {/* Section 1: Features */}
-      <MotionSection className="space-y-10">
+      <MotionSection id="features" className="space-y-10 scroll-mt-24">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             ACCELERATE YOUR
@@ -501,7 +501,7 @@ export default async function HomePage() {
       </MotionSection>
 
       {/* Section 2: "HOW IT WORKS" 4-Step Stepper */}
-      <MotionSection className="space-y-10">
+      <MotionSection id="how-it-works" className="space-y-10 scroll-mt-24">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             HOW MENTATRY
@@ -601,7 +601,7 @@ export default async function HomePage() {
       </MotionSection>
 
       {/* Section 4: FREQUENTLY ASKED QUESTIONS (FAQ) */}
-      <MotionSection className="space-y-10">
+      <MotionSection id="faq" className="space-y-10 scroll-mt-24">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             FREQUENTLY ASKED
