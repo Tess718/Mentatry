@@ -142,6 +142,8 @@ export async function loginAction(prevState: any, formData: FormData) {
   }
 }
 
-export async function logoutAction() {
-  await signOut({ redirectTo: "/" });
+export async function logoutAction(redirectToOrFormData?: string | FormData) {
+  const target =
+    typeof redirectToOrFormData === "string" ? redirectToOrFormData : "/";
+  await signOut({ redirectTo: target });
 }
