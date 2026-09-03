@@ -1,30 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { joinQuizByCodeAction } from "@/app/actions/quizzes";
 import { KeyRound, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 
-
 export default function JoinQuizPage() {
   const router = useRouter();
-  const [joinCode, setJoinCode] = useState("");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [state, formAction, isPending] = useActionState(joinQuizByCodeAction, null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    startTransition(async () => {
-      const res = await joinQuizByCodeAction(joinCode);
-      if (res.error) {
-        setErrorMsg(res.error);
-      } else if (res.quizId) {
-        router.push(`/quizzes/${res.quizId}/take`);
-      }
-    });
-  };
+  useEffect(() => {
+    if (state?.success && state?.quizId) {
+      router.push(`/quizzes/${state.quizId}/take`);
+    }
+  }, [state, router]);
 
   return (
     <div className="max-w-md mx-auto py-12">
@@ -39,30 +28,46 @@ export default function JoinQuizPage() {
           </p>
         </div>
 
-        {errorMsg && (
-          <div className="neo-box bg-pink-100 border-red-600 p-3 text-red-700 text-sm font-bold flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
+        <div aria-live="polite">
+          {state?.error && !state?.errors?.joinCode && (
+            <div className="neo-box bg-pink-100 border-red-600 p-3 text-red-700 text-sm font-bold flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>{state.error}</span>
+            </div>
+          )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form action={formAction} className="space-y-4">
           <div className="space-y-1">
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-900">Classroom Join Code</label>
+            <label htmlFor="joinCode" className="block text-xs font-black uppercase tracking-wider text-slate-900">
+              Classroom Join Code
+            </label>
             <input
+              id="joinCode"
+              name="joinCode"
               type="text"
               required
               maxLength={12}
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              defaultValue={state?.fields?.joinCode || ""}
+              aria-invalid={!!state?.errors?.joinCode}
+              aria-describedby={state?.errors?.joinCode ? "joinCode-error" : undefined}
               placeholder="e.g. AB12CD"
-              className="neo-input uppercase tracking-widest text-center text-xl font-mono font-black py-3 text-slate-900"
+              className={`neo-input uppercase tracking-widest text-center text-xl font-mono font-black py-3 text-slate-900 ${
+                state?.errors?.joinCode ? "border-red-600 bg-red-50/50" : ""
+              }`}
             />
+            {state?.errors?.joinCode && (
+              <p id="joinCode-error" className="text-xs font-bold text-red-600 mt-1 flex items-center justify-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{state.errors.joinCode[0]}</span>
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={isPending || joinCode.trim().length < 4}
+            disabled={isPending}
+            aria-busy={isPending}
             className="neo-btn neo-btn-pink w-full py-3 text-base flex items-center justify-center gap-2"
           >
             {isPending ? (

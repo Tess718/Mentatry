@@ -18,7 +18,7 @@ export function StartDailyQuizButton({ quizId }: { quizId: string }) {
     <button 
       onClick={handleClick}
       disabled={isPending}
-      className="neo-btn neo-btn-black text-lg px-8 py-4 flex justify-center w-full text-white disabled:opacity-80 transition-opacity"
+      className="neo-btn neo-btn-black text-lg px-8 py-4 flex justify-center w-full text-white shadow-[5px_5px_0px_0px_rgba(255,255,255,1)] hover:shadow-[7px_7px_0px_0px_rgba(255,255,255,1)] active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] disabled:opacity-80 transition-all"
     >
       <span>{isPending ? "Loading Challenge..." : "Play Today's Quiz"}</span>
       {isPending ? (
