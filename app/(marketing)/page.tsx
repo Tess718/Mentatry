@@ -69,11 +69,11 @@ export default async function HomePage() {
   });
 
   return (
-    <div className="space-y-24 py-6 sm:py-10 max-w-7xl mx-auto">
+    <div className="pb-16 max-w-7xl mx-auto">
       {/* Hero Section */}
-      <MotionHero className="relative text-center space-y-8 py-6 px-4">
+      <MotionHero className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center text-center space-y-8 sm:space-y-10 pt-12 sm:pt-16 pb-8 px-4">
         {/* Circular Stamp Element (Top Right floating) */}
-        <div className="hidden md:flex absolute top-0 right-4 lg:right-12 items-center justify-center">
+        <div className="hidden md:flex absolute top-4 md:top-8 right-4 lg:right-12 items-center justify-center">
           <MotionFloatingBadge className="relative w-28 h-28 flex items-center justify-center cursor-pointer">
             <svg
               className="w-full h-full animate-spin-slow"
@@ -133,8 +133,10 @@ export default async function HomePage() {
         </div>
       </MotionHero>
 
-      {/* Section 1: Features */}
-      <MotionSection id="features" className="space-y-10 scroll-mt-24">
+      {/* Content Sections */}
+      <div className="space-y-24 sm:space-y-32 mt-16 sm:mt-24">
+        {/* Section 1: Features */}
+        <MotionSection id="features" className="space-y-10 scroll-mt-24">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             ACCELERATE YOUR
@@ -659,6 +661,7 @@ export default async function HomePage() {
           </Link>
         </div>
       </MotionCtaBox>
+      </div>
     </div>
   );
 }
