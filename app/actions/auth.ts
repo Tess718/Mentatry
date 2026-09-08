@@ -33,7 +33,31 @@ function getClientIp(headersList: Headers): string {
   return headersList.get("x-real-ip") ?? "127.0.0.1";
 }
 
-export async function signupAction(prevState: any, formData: FormData) {
+export type AuthActionState = {
+  success?: boolean;
+  error?: string;
+  errors?: {
+    firstName?: string[];
+    lastName?: string[];
+    email?: string[];
+    password?: string[];
+  };
+  fields?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+};
+
+export async function signupAction(
+  prevState: AuthActionState | null,
+  formData: FormData
+): Promise<AuthActionState> {
+  const rawFirstName = (formData.get("firstName") as string) || "";
+  const rawLastName = (formData.get("lastName") as string) || "";
+  const rawEmail = (formData.get("email") as string) || "";
+  const rawPassword = (formData.get("password") as string) || "";
+
   try {
     const headersList = await headers();
     const ip = getClientIp(headersList);
@@ -43,11 +67,6 @@ export async function signupAction(prevState: any, formData: FormData) {
       return { error: "Too many attempts. Please try again later." };
     }
 
-    const rawFirstName = formData.get("firstName") as string;
-    const rawLastName = formData.get("lastName") as string;
-    const rawEmail = formData.get("email") as string;
-    const rawPassword = formData.get("password") as string;
-
     const validated = signupSchema.safeParse({
       firstName: rawFirstName,
       lastName: rawLastName,
@@ -56,13 +75,31 @@ export async function signupAction(prevState: any, formData: FormData) {
     });
 
     if (!validated.success) {
-      return { error: validated.error.issues[0].message };
+      return {
+        error: validated.error.issues[0]?.message || "Please correct the highlighted fields.",
+        errors: validated.error.flatten().fieldErrors,
+        fields: {
+          firstName: rawFirstName,
+          lastName: rawLastName,
+          email: rawEmail,
+        },
+      };
     }
 
     const email = validated.data.email.toLowerCase().trim();
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return { error: "We are unable to create this account" };
+      return {
+        error: "An account with this email address already exists.",
+        errors: {
+          email: ["An account with this email address already exists."],
+        },
+        fields: {
+          firstName: rawFirstName,
+          lastName: rawLastName,
+          email: rawEmail,
+        },
+      };
     }
 
     const hashedPassword = await bcrypt.hash(validated.data.password, 10);
@@ -95,11 +132,24 @@ export async function signupAction(prevState: any, formData: FormData) {
       throw err;
     }
     console.error("Signup error:", err);
-    return { error: "Something went wrong during sign up. Please try again." };
+    return {
+      error: "Something went wrong during sign up. Please try again.",
+      fields: {
+        firstName: rawFirstName,
+        lastName: rawLastName,
+        email: rawEmail,
+      },
+    };
   }
 }
 
-export async function loginAction(prevState: any, formData: FormData) {
+export async function loginAction(
+  prevState: AuthActionState | null,
+  formData: FormData
+): Promise<AuthActionState> {
+  const rawEmail = (formData.get("email") as string) || "";
+  const rawPassword = (formData.get("password") as string) || "";
+
   try {
     const headersList = await headers();
     const ip = getClientIp(headersList);
@@ -109,8 +159,6 @@ export async function loginAction(prevState: any, formData: FormData) {
       return { error: "Too many login attempts. Please try again later." };
     }
 
-    const rawEmail = formData.get("email") as string;
-    const rawPassword = formData.get("password") as string;
     const rawCallbackUrl = (formData.get("callbackUrl") as string) || "/quizzes";
     const redirectTo = (rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//"))
       ? rawCallbackUrl
@@ -118,7 +166,13 @@ export async function loginAction(prevState: any, formData: FormData) {
 
     const validated = loginSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!validated.success) {
-      return { error: validated.error.issues[0].message };
+      return {
+        error: validated.error.issues[0]?.message || "Please check your email and password.",
+        errors: validated.error.flatten().fieldErrors,
+        fields: {
+          email: rawEmail,
+        },
+      };
     }
 
     const email = validated.data.email.toLowerCase().trim();
@@ -132,13 +186,27 @@ export async function loginAction(prevState: any, formData: FormData) {
     return { success: true };
   } catch (err: any) {
     if (err?.type === "CredentialsSignin" || err?.message?.includes("CredentialsSignin")) {
-      return { error: "Invalid email or password." };
+      return {
+        error: "Invalid email or password.",
+        errors: {
+          email: ["Please verify your email address."],
+          password: ["Please verify your password."],
+        },
+        fields: {
+          email: rawEmail,
+        },
+      };
     }
     if (err?.digest?.startsWith("NEXT_REDIRECT")) {
       throw err;
     }
     console.error("Login error:", err);
-    return { error: "Invalid email or password." };
+    return {
+      error: "Invalid email or password.",
+      fields: {
+        email: rawEmail,
+      },
+    };
   }
 }
 

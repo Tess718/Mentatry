@@ -228,16 +228,45 @@ export async function createManualQuizAction(payload: ManualQuizInput) {
   return { success: true, quizId: quiz.id };
 }
 
-export async function joinQuizByCodeAction(rawJoinCode: string) {
+export type JoinQuizActionState = {
+  success?: boolean;
+  error?: string;
+  errors?: {
+    joinCode?: string[];
+  };
+  quizId?: string;
+  fields?: {
+    joinCode?: string;
+  };
+};
+
+export async function joinQuizByCodeAction(
+  prevStateOrCode: JoinQuizActionState | string | null,
+  formDataOrEmpty?: FormData
+): Promise<JoinQuizActionState> {
   const session = await auth();
   if (!session?.user?.id) {
     return { error: "Unauthorized. Please log in first." };
   }
 
   const userId = session.user.id;
+
+  let rawJoinCode = "";
+  if (formDataOrEmpty instanceof FormData) {
+    rawJoinCode = ((formDataOrEmpty.get("joinCode") as string) || "").trim();
+  } else if (typeof prevStateOrCode === "string") {
+    rawJoinCode = prevStateOrCode.trim();
+  } else if (prevStateOrCode instanceof FormData) {
+    rawJoinCode = ((prevStateOrCode.get("joinCode") as string) || "").trim();
+  }
+
   const validated = joinCodeSchema.safeParse({ joinCode: rawJoinCode });
   if (!validated.success) {
-    return { error: validated.error.issues[0].message };
+    return {
+      error: validated.error.issues[0].message,
+      errors: validated.error.flatten().fieldErrors,
+      fields: { joinCode: rawJoinCode },
+    };
   }
 
   const code = validated.data.joinCode;
@@ -247,11 +276,23 @@ export async function joinQuizByCodeAction(rawJoinCode: string) {
   });
 
   if (!quiz) {
-    return { error: "No quiz found with that join code. Please check and try again." };
+    return {
+      error: "No quiz found with that join code. Please check and try again.",
+      errors: {
+        joinCode: ["No quiz found with that join code. Please check and try again."],
+      },
+      fields: { joinCode: rawJoinCode },
+    };
   }
 
   if (quiz.status !== "PUBLISHED") {
-    return { error: "This quiz is still in draft mode and cannot be joined yet." };
+    return {
+      error: "This quiz is still in draft mode and cannot be joined yet.",
+      errors: {
+        joinCode: ["This quiz is still in draft mode and cannot be joined yet."],
+      },
+      fields: { joinCode: rawJoinCode },
+    };
   }
 
   // Check existing access

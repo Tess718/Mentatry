@@ -115,7 +115,7 @@ async function AsyncDailyChallenge({ userId }: { userId: string }) {
       <div className="md:col-span-7 lg:col-span-8 neo-box p-6 sm:p-10 bg-lime-300 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black space-y-8">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-2 neo-badge bg-black text-white px-3 py-1.5 text-sm">
+          <div className="inline-flex items-center gap-2 neo-badge bg-black text-white px-3 py-1.5 text-sm shadow-[3px_3px_0px_0px_rgba(255,255,255,1)]">
             <CountdownTimer />
           </div>
           {todaysAttempt && (
