@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CopyJoinCodeButton } from "@/components/copy-join-code-button";
 import { DeleteQuizButton } from "@/components/delete-quiz-button";
 import { HostLiveButton } from "@/components/host-live-button";
@@ -54,25 +53,16 @@ export function DashboardQuizGrid({
     avgAccuracy: number;
   };
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [filter, setFilter] = useState<"ALL" | "OWNER" | "JOINED">("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Read view state from URL search parameters
-  const tabParam = (searchParams.get("tab") || "all").toLowerCase();
-  const activeTab: "ALL" | "OWNER" | "JOINED" =
-    tabParam === "owner" ? "OWNER" : tabParam === "joined" ? "JOINED" : "ALL";
-
-  const rawPage = parseInt(searchParams.get("page") || "1", 10);
-  const currentPage = isNaN(rawPage) || rawPage < 1 ? 1 : rawPage;
-
-  // Derived metric statistics across full user library (0ms, cached in memory)
+  // Derived metric statistics across full user library
   const totalCreated = useMemo(() => quizzes.filter((q) => q.isOwner).length, [quizzes]);
   const totalJoined = useMemo(() => quizzes.filter((q) => !q.isOwner).length, [quizzes]);
 
-  // Derive visible quizzes based on URL active tab parameter instantly (0ms)
+  // Derive visible quizzes based on active tab filter
   const filteredQuizzes = useMemo(() => {
-    switch (activeTab) {
+    switch (filter) {
       case "OWNER":
         return quizzes.filter((q) => q.isOwner);
       case "JOINED":
@@ -80,41 +70,22 @@ export function DashboardQuizGrid({
       default:
         return quizzes;
     }
-  }, [quizzes, activeTab]);
+  }, [quizzes, filter]);
 
-  // Derive paginated slice (0ms, instant page flips)
+  // Derive paginated slice
   const totalPages = Math.ceil(filteredQuizzes.length / PAGE_SIZE) || 1;
   const activePage = Math.min(currentPage, totalPages);
   const paginatedQuizzes = useMemo(() => {
     return filteredQuizzes.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE);
   }, [filteredQuizzes, activePage]);
 
-  // Synchronize view state with URL parameters for bookmarking and back/forward navigation
-  const updateUrl = (newTab: "ALL" | "OWNER" | "JOINED", newPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (newTab === "ALL") {
-      params.delete("tab");
-    } else {
-      params.set("tab", newTab.toLowerCase());
-    }
-
-    if (newPage <= 1) {
-      params.delete("page");
-    } else {
-      params.set("page", newPage.toString());
-    }
-
-    const queryString = params.toString();
-    router.push(`${pathname}${queryString ? `?${queryString}` : ""}`, { scroll: false });
-  };
-
   const handleFilterChange = (newFilter: "ALL" | "OWNER" | "JOINED") => {
-    updateUrl(newFilter, 1);
+    setFilter(newFilter);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (targetPage: number) => {
-    updateUrl(activeTab, targetPage);
+    setCurrentPage(targetPage);
   };
 
   return (
@@ -179,12 +150,12 @@ export function DashboardQuizGrid({
           <h2 className="text-2xl font-black uppercase tracking-tight text-white">Your Quiz Library</h2>
         </div>
 
-        {/* Filter Buttons (Synced to URL Search Params with instant 0ms derivation) */}
+        {/* Filter Buttons */}
         <div className="flex items-center gap-2 bg-slate-900 border-2 border-black p-1 rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
           <button
             onClick={() => handleFilterChange("ALL")}
             className={`px-3 py-1.5 text-xs font-black uppercase rounded-lg transition-all cursor-pointer ${
-              activeTab === "ALL"
+              filter === "ALL"
                 ? "bg-amber-300 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 : "text-slate-400 hover:text-white"
             }`}
@@ -194,7 +165,7 @@ export function DashboardQuizGrid({
           <button
             onClick={() => handleFilterChange("OWNER")}
             className={`px-3 py-1.5 text-xs font-black uppercase rounded-lg transition-all cursor-pointer ${
-              activeTab === "OWNER"
+              filter === "OWNER"
                 ? "bg-lime-300 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 : "text-slate-400 hover:text-white"
             }`}
@@ -204,7 +175,7 @@ export function DashboardQuizGrid({
           <button
             onClick={() => handleFilterChange("JOINED")}
             className={`px-3 py-1.5 text-xs font-black uppercase rounded-lg transition-all cursor-pointer ${
-              activeTab === "JOINED"
+              filter === "JOINED"
                 ? "bg-cyan-300 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 : "text-slate-400 hover:text-white"
             }`}
@@ -222,9 +193,9 @@ export function DashboardQuizGrid({
           </div>
           <h3 className="text-xl font-black uppercase text-white tracking-tight">No Quizzes Found</h3>
           <p className="text-xs font-bold text-slate-400 max-w-sm mx-auto">
-            {activeTab === "OWNER"
+            {filter === "OWNER"
               ? "You haven't generated or created any quizzes yet. Try creating your first AI quiz!"
-              : activeTab === "JOINED"
+              : filter === "JOINED"
               ? "You haven't joined any quizzes with a code yet."
               : `Hey ${userFirstName}, generate your first AI quiz or join a room with a code!`}
           </p>
