@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { signupAction } from "@/app/actions/auth";
 import { AlertCircle, Eye, EyeOff, CheckCircle2, Loader2 } from "lucide-react";
+import { AuthShowcasePanel } from "@/components/auth-showcase-panel";
 
 function SignupForm() {
   const [state, formAction, isPending] = useActionState(signupAction, null);
@@ -30,34 +31,37 @@ function SignupForm() {
   const isValidPassword = passedCount === 5;
 
   return (
-    <div className="neo-box p-7 sm:p-8 bg-white space-y-6 w-full max-w-lg rounded-2xl">
-      <div className="text-center space-y-3">
-        <div className="flex justify-center">
-          <Link
-            href="/"
-            className="inline-flex p-3 bg-amber-400 border-3 border-black rounded-xl hover:-translate-y-0.5 transition-transform cursor-pointer"
-            title="Mentatry Home"
-          >
-            <Image
-              src="/mentatry_logo.png"
-              alt="Mentatry Logo"
-              width={36}
-              height={36}
-              className="w-9 h-9 object-contain"
-              priority
-            />
-          </Link>
-        </div>
+    <div className="w-full max-w-lg mx-auto flex flex-col justify-between h-full py-1">
+      {/* Mobile-only Brand Logo */}
+      <div className="lg:hidden mb-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 p-2 bg-amber-400 border-2 border-black rounded-xl hover:-translate-y-0.5 transition-transform"
+          title="Mentatry Home"
+        >
+          <Image
+            src="/mentatry_logo.png"
+            alt="Mentatry Logo"
+            width={26}
+            height={26}
+            className="w-6.5 h-6.5 object-contain"
+          />
+          <span className="font-black text-black text-xs uppercase tracking-wider">
+            Mentatry
+          </span>
+        </Link>
+      </div>
 
-        <div>
+      {/* Center Form Content */}
+      <div className="space-y-4 my-auto">
+        <div className="space-y-1.5">
           <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-slate-900">
             Create Account
           </h1>
-          <p className="text-xs sm:text-sm font-semibold text-slate-600 mt-1">
+          <p className="text-xs sm:text-sm font-semibold text-slate-600">
             Start generating AI quizzes in seconds
           </p>
         </div>
-      </div>
 
       <div aria-live="polite">
         {state?.error && !state?.errors && (
@@ -290,13 +294,15 @@ function SignupForm() {
           {isPending && <Loader2 className="w-5 h-5 animate-spin shrink-0" />}
           <span>{isPending ? "Creating Account..." : "Create Account"}</span>
         </button>
-      </form>
+        </form>
+      </div>
 
-      <div className="text-center text-xs sm:text-sm font-bold pt-4 border-t-2 border-slate-100 text-slate-600">
+      {/* Bottom Switch Link */}
+      <div className="text-center text-xs sm:text-sm font-bold pt-6 mt-4 border-t-2 border-slate-100 text-slate-600">
         Already have an account?{" "}
         <Link
           href={`/login${callbackUrl !== "/quizzes" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
-          className="underline underline-offset-4 font-black text-pink-600 hover:text-black transition-colors"
+          className="font-black text-pink-600 hover:text-black underline underline-offset-4 transition-colors ml-1"
         >
           Log In
         </Link>
@@ -307,10 +313,23 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
-      <Suspense fallback={<div className="neo-box p-8 bg-white text-center font-bold">Loading...</div>}>
-        <SignupForm />
-      </Suspense>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 lg:py-12">
+      {/* Master Unified Container Card Scaled Up to max-w-6xl with 50/50 split */}
+      <div className="w-full max-w-6xl bg-white border-4 border-black rounded-3xl sm:rounded-[36px] shadow-[10px_10px_0px_0px_#000] p-4 sm:p-6 lg:p-7">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-stretch">
+          {/* Left Inset Sticker Showcase Panel (Equal 50% width) */}
+          <div className="hidden lg:block h-full">
+            <AuthShowcasePanel mode="signup" />
+          </div>
+
+          {/* Right Form Area (Equal 50% width) */}
+          <div className="flex flex-col justify-center px-3 sm:px-8 lg:px-10 py-3 sm:py-4">
+            <Suspense fallback={<div className="p-8 text-center font-bold text-slate-800">Loading...</div>}>
+              <SignupForm />
+            </Suspense>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
