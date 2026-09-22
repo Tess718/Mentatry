@@ -28,11 +28,11 @@ const FEATURES: FeatureCardData[] = [
     id: "feature-01",
     tabLabel: "✦ 01 AI QUIZZES",
     tabShortLabel: "✦ 01",
-    category: "AI SYNTHESIS ENGINE",
+    category: "AI QUIZ ENGINE",
     title: "AI Quiz Generator",
     description:
       "Generate high-precision multiple-choice questions from any custom topic or pasted lecture notes with verified answer choices and detailed rationale in seconds.",
-    tags: ["AI GENERATOR", "LLM SYNTHESIS", "AUTO-DISTRACTORS"],
+    tags: ["TOPIC OR NOTES", "STEP EXPLANATIONS", "CUSTOM DIFFICULTY"],
     bgColor: "#38bdf8",
     textColor: "#000000",
     chipBorder: "border-black/30",
@@ -43,11 +43,11 @@ const FEATURES: FeatureCardData[] = [
     id: "feature-02",
     tabLabel: "✦ 02 LIVE ROOMS",
     tabShortLabel: "✦ 02",
-    category: "MULTIPLAYER ENGINE",
+    category: "MULTIPLAYER ROOMS",
     title: "Join Code Rooms",
     description:
       "Share interactive competition lobbies instantly using 6-character room codes. Zero friction or login barriers for takers — jump straight into live knowledge arenas.",
-    tags: ["LIVE LOBBIES", "6-CHAR CODES", "ZERO SETUP"],
+    tags: ["6-CHAR ROOM CODES", "NO LOGIN NEEDED", "LIVE MULTIPLAYER"],
     bgColor: "#0d0f17",
     textColor: "#ffffff",
     chipBorder: "border-white/30",
@@ -58,11 +58,11 @@ const FEATURES: FeatureCardData[] = [
     id: "feature-03",
     tabLabel: "✦ 03 INSIGHTS",
     tabShortLabel: "✦ 03",
-    category: "DIAGNOSTIC CORE",
+    category: "PERFORMANCE ANALYTICS",
     title: "Real-Time Insights",
     description:
-      "Automated scoring, participant accuracy heatmaps, and question-by-question response breakdowns to pinpoint study gaps and misunderstandings without manual grading.",
-    tags: ["AUTO-GRADING", "ACCURACY HEATMAP", "ITEM ANALYSIS"],
+      "Automated scoring, participant accuracy rankings, and question-by-question miss rate breakdowns to pinpoint study gaps and misunderstandings without manual grading.",
+    tags: ["AUTO-GRADING", "MISS-RATE ANALYSIS", "STUDENT ACCURACY"],
     bgColor: "#facc15",
     textColor: "#000000",
     chipBorder: "border-black/30",
@@ -73,11 +73,11 @@ const FEATURES: FeatureCardData[] = [
     id: "feature-04",
     tabLabel: "✦ 04 REWARDS",
     tabShortLabel: "✦ 04",
-    category: "ENGAGEMENT LOOP",
+    category: "STREAKS & ACHIEVEMENTS",
     title: "Gamification & Rewards",
     description:
-      "Keep learners motivated with cognitive streak counters, collectible achievement badges, and tiered XP ranks designed to build lasting daily study habits.",
-    tags: ["DAILY STREAKS", "ACHIEVEMENT VAULT", "XP SYSTEM"],
+      "Keep learners motivated with cognitive daily streak counters, collectible achievement badges, and global daily leaderboards designed to build lasting study habits.",
+    tags: ["DAILY STREAKS", "UNLOCKABLE BADGES", "DAILY LEADERBOARD"],
     bgColor: "#ec4899",
     textColor: "#ffffff",
     chipBorder: "border-white/30",
@@ -199,7 +199,7 @@ export function StackedFolderShowcase() {
 
                         <div className="flex items-center justify-between pt-1 border-t border-slate-300 text-[10px] font-mono font-bold text-slate-600">
                           <span>10 MCQs Generated</span>
-                          <span className="text-emerald-700 font-black">99.8% ACCURACY</span>
+                          <span className="text-emerald-700 font-black">EXPLANATIONS READY</span>
                         </div>
                       </div>
                     )}
@@ -221,7 +221,7 @@ export function StackedFolderShowcase() {
                             ROOM PASSCODE
                           </span>
                           <div className="bg-amber-400 text-black font-mono font-black text-xl sm:text-2xl py-1.5 tracking-widest border-2 border-black shadow-[3px_3px_0px_0px_rgba(255,255,255,0.2)]">
-                            #MNT-742
+                            K7M2P9
                           </div>
                         </div>
 
@@ -244,7 +244,7 @@ export function StackedFolderShowcase() {
                             DIAGNOSTICS
                           </span>
                           <span className="font-mono text-[10px] bg-emerald-300 text-black px-2 py-0.5 font-black uppercase border border-black">
-                            91.2% MASTERY
+                            91.2% ACCURACY
                           </span>
                         </div>
 
@@ -282,7 +282,7 @@ export function StackedFolderShowcase() {
 
                         <div className="border-t border-black pt-1 flex items-center justify-between text-[10px] font-mono font-bold text-black">
                           <span>Instant grading</span>
-                          <span>Export CSV ↗</span>
+                          <span>Per-Question Stats ↗</span>
                         </div>
                       </div>
                     )}
@@ -295,7 +295,7 @@ export function StackedFolderShowcase() {
                             REWARDS ENGINE
                           </span>
                           <span className="font-mono text-[10px] bg-pink-300 text-black px-2 py-0.5 font-black uppercase border border-black">
-                            TIER 4
+                            BADGE UNLOCKED
                           </span>
                         </div>
 
@@ -310,7 +310,7 @@ export function StackedFolderShowcase() {
                         </div>
 
                         <div className="flex items-center justify-between pt-1 border-t border-black text-[10px] font-mono font-bold text-black">
-                          <span>+450 XP Awarded</span>
+                          <span>Daily Streak Kept 🔥</span>
                           <span className="font-black">RANK #1 🏆</span>
                         </div>
                       </div>
