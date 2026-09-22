@@ -42,8 +42,8 @@ export function FannedStepsShowcase() {
   const steps: StepCard[] = [
     {
       stepNumber: "01",
-      headline: "Type Any Topic Or Notes",
-      body: "Type a subject, upload class materials, or paste raw study notes directly to kick off instant synthesis.",
+      headline: "Input Topic or Notes",
+      body: "Type any syllabus subject, upload lecture slides, or paste raw study notes with custom question counts.",
       bgColor: "#38bdf8", // Mentatry Brand Cyan
       visualization: (
         <div className="w-full bg-white border-2 border-black rounded-xl p-3 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-[152px] select-none">
@@ -51,36 +51,36 @@ export function FannedStepsShowcase() {
           <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
             <span className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] font-black uppercase text-sky-900">
               <Sparkles className="w-3.5 h-3.5 text-sky-600 fill-sky-500 shrink-0" />
-              AI QUIZ ENGINE
+              AI SYNTHESIS
             </span>
             <span className="font-mono text-[9px] bg-sky-100 text-sky-900 px-1.5 py-0.5 font-bold uppercase rounded border border-sky-300">
-              READY
+              STEP 01
             </span>
           </div>
 
           {/* Simulated Input Field */}
           <div className="bg-slate-50 border border-black/30 rounded-lg p-2 space-y-0.5">
             <div className="flex items-center justify-between text-[9px] font-mono font-bold text-slate-500 uppercase">
-              <span>TARGET SUBJECT</span>
-              <span className="text-sky-700 font-black">AI DETECTED</span>
+              <span>PROMPT / NOTES</span>
+              <span className="text-sky-700 font-black">AI PARSER</span>
             </div>
             <div className="font-black text-xs text-black truncate flex items-center gap-1">
-              <span>Cellular Respiration & ATP</span>
+              <span>Python: Asyncio & Event Loops</span>
               <span className="w-1 h-3.5 bg-sky-500 animate-pulse inline-block" />
             </div>
           </div>
 
-          {/* Tags footer */}
+          {/* Config chips */}
           <div className="flex items-center justify-between text-[9px] font-mono font-bold text-slate-600 pt-1 border-t border-slate-100">
             <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
               10 MCQs
             </span>
             <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
-              Medium
+              Medium • 30s
             </span>
             <span className="text-sky-800 font-black flex items-center gap-0.5">
               <Zap className="w-2.5 h-2.5 fill-sky-600 text-sky-600 shrink-0" />
-              EXPLANATIONS
+              READY
             </span>
           </div>
         </div>
@@ -88,8 +88,8 @@ export function FannedStepsShowcase() {
     },
     {
       stepNumber: "02",
-      headline: "Instant AI Quiz Crafting",
-      body: "AI synthesizes balanced multiple-choice questions, tricky distractors, and verified rationale in seconds.",
+      headline: "Review with AI Rationale",
+      body: "Mentatry auto-generates balanced distractors and detailed step-by-step reasoning for every answer choice.",
       bgColor: "#a3e635", // Mentatry Brand Lime
       visualization: (
         <div className="w-full bg-white border-2 border-black rounded-xl p-3 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-[152px] select-none">
@@ -97,36 +97,41 @@ export function FannedStepsShowcase() {
           <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
             <span className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] font-black uppercase text-lime-950">
               <Zap className="w-3.5 h-3.5 text-lime-700 fill-lime-500 shrink-0" />
-              QUESTION 01 OF 10
+              QUESTION 02 OF 10
             </span>
             <span className="font-mono text-[9px] bg-emerald-100 text-emerald-900 px-1.5 py-0.5 font-black uppercase rounded border border-emerald-300">
-              VERIFIED
+              EXPLANATION
             </span>
           </div>
 
           {/* Question Text */}
-          <div className="text-[11px] font-black text-black leading-snug line-clamp-2">
-            Where does the Krebs cycle take place in eukaryotes?
+          <div className="text-[11px] font-black text-black leading-snug line-clamp-1">
+            What does the `await` keyword do in an async function?
           </div>
 
-          {/* MCQ Options */}
-          <div className="space-y-1">
-            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-500 px-2 py-1 rounded text-[10px] font-bold text-emerald-950">
-              <span className="truncate">A) Mitochondrial matrix</span>
+          {/* Verified Answer with Explanation */}
+          <div className="bg-emerald-50 border border-emerald-400 p-1.5 rounded space-y-0.5">
+            <div className="flex items-center justify-between text-[10px] font-black text-emerald-950">
+              <span className="truncate">A) Pauses until coroutine completes</span>
               <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0 ml-1" />
             </div>
-            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 px-2 py-1 rounded text-[10px] font-medium text-slate-600">
-              <span className="truncate">B) Outer membrane</span>
-              <span className="w-2.5 h-2.5 rounded-full border border-slate-300 shrink-0 ml-1" />
-            </div>
+            <p className="text-[9px] font-mono text-emerald-800 line-clamp-1">
+              ✓ Rationale: Yields execution back to event loop
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between text-[9px] font-mono font-bold text-slate-500 pt-1 border-t border-slate-100">
+            <span className="text-slate-700">4 Options Generated</span>
+            <span className="text-emerald-700 font-black">AI VERIFIED</span>
           </div>
         </div>
       ),
     },
     {
       stepNumber: "03",
-      headline: "Share Live Room Code",
-      body: "Broadcast your 6-character room code for frictionless one-click entry on phones, tablets, or laptops.",
+      headline: "Share 6-Character Room PIN",
+      body: "Broadcast your room code. Players join from phones or laptops in seconds — zero signups or downloads needed.",
       bgColor: "#facc15", // Mentatry Brand Yellow
       visualization: (
         <div className="w-full bg-white border-2 border-black rounded-xl p-3 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-[152px] select-none">
@@ -134,10 +139,10 @@ export function FannedStepsShowcase() {
           <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
             <span className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] font-black uppercase text-amber-950">
               <KeyRound className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-              LIVE ROOM LOBBY
+              LIVE LOBBY
             </span>
             <span className="flex items-center gap-1 font-mono text-[9px] bg-amber-100 text-amber-900 px-1.5 py-0.5 font-black uppercase rounded border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />{" "}
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />{" "}
               SYNCED
             </span>
           </div>
@@ -145,20 +150,20 @@ export function FannedStepsShowcase() {
           {/* Room Join Code Display */}
           <div className="text-center py-1 bg-amber-50 border border-amber-300 rounded-lg">
             <span className="font-mono text-[9px] uppercase tracking-widest text-amber-800 font-bold block">
-              ROOM PASSCODE
+              JOIN AT MENTATRY.COM
             </span>
             <div className="bg-amber-400 text-black font-mono font-black text-lg py-0.5 tracking-widest border-2 border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mx-2">
-              K7M2P9
+              H9X4T2
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Player badges footer */}
           <div className="flex items-center justify-between text-[10px] font-mono border-t border-slate-100 pt-1 text-slate-700">
             <span className="flex items-center gap-1 font-bold">
-              <Users className="w-3 h-3 text-amber-700 shrink-0" /> 18 Players
+              <Users className="w-3 h-3 text-amber-700 shrink-0" /> 24 Joined
             </span>
-            <span className="font-black text-amber-950 text-[9px] uppercase">
-              NO LOGIN NEEDED
+            <span className="bg-black text-amber-400 font-black px-1.5 py-0.5 text-[8.5px] uppercase rounded">
+              NO APP NEEDED
             </span>
           </div>
         </div>
@@ -166,8 +171,8 @@ export function FannedStepsShowcase() {
     },
     {
       stepNumber: "04",
-      headline: "Real-Time Score Insights",
-      body: "Track live student accuracy, question miss-rate diagnostics, and participant rankings without manual grading.",
+      headline: "Instant Question Miss-Rates",
+      body: "Spot classroom misunderstandings instantly with question miss-rate ranking, accuracy metrics, and score tallies.",
       bgColor: "#f472b6", // Mentatry Brand Pink
       visualization: (
         <div className="w-full bg-white border-2 border-black rounded-xl p-3 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-[152px] select-none">
@@ -175,44 +180,36 @@ export function FannedStepsShowcase() {
           <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
             <span className="flex items-center gap-1.5 font-mono text-[10px] sm:text-[11px] font-black uppercase text-pink-950">
               <BarChart3 className="w-3.5 h-3.5 text-pink-700 shrink-0" />
-              LIVE DIAGNOSTICS
+              MISS-RATE REPORT
             </span>
-            <span className="font-mono text-[9px] bg-pink-100 text-pink-950 px-1.5 py-0.5 font-black uppercase rounded border border-pink-300">
-              91.2% ACCURACY
+            <span className="font-mono text-[9px] bg-red-100 text-red-800 px-1.5 py-0.5 font-black uppercase rounded border border-red-300">
+              GAP DETECTED
             </span>
           </div>
 
-          {/* Progress Bars */}
+          {/* Breakdown items */}
           <div className="space-y-1.5 py-0.5">
-            <div className="space-y-0.5">
-              <div className="flex justify-between font-mono text-[9px] font-bold">
-                <span>Q1 (Glycolysis)</span>
-                <span className="text-emerald-700 font-black">98% Pass</span>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded border border-black overflow-hidden">
-                <div className="bg-emerald-500 h-full w-[98%]" />
-              </div>
+            <div className="bg-red-50 border border-red-300 rounded p-1 flex items-center justify-between text-[9.5px] font-mono">
+              <span className="font-bold text-red-950 truncate max-w-[170px]">
+                Q4: Event Loop Tasks
+              </span>
+              <span className="font-black text-red-700 shrink-0">62% Missed ⚠️</span>
             </div>
-
-            <div className="space-y-0.5">
-              <div className="flex justify-between font-mono text-[9px] font-bold">
-                <span>Q2 (Krebs Cycle)</span>
-                <span className="text-amber-700 font-black">86% Pass</span>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded border border-black overflow-hidden">
-                <div className="bg-amber-400 h-full w-[86%]" />
-              </div>
+            <div className="bg-emerald-50 border border-emerald-300 rounded p-1 flex items-center justify-between text-[9.5px] font-mono">
+              <span className="font-bold text-emerald-950 truncate max-w-[170px]">
+                Q1: Async Syntax
+              </span>
+              <span className="font-black text-emerald-700 shrink-0">96% Passed ✓</span>
             </div>
           </div>
 
-          {/* Top Rank Winner */}
+          {/* Actionable insight Footer */}
           <div className="flex items-center justify-between text-[10px] font-mono border-t border-slate-100 pt-1 text-slate-800">
-            <span className="flex items-center gap-1 font-bold text-pink-950">
-              <Trophy className="w-3 h-3 text-amber-500 shrink-0" /> #1 Maya
-              (2,450 pts)
+            <span className="font-bold text-slate-700 text-[9px]">
+              Auto-Graded Instantly
             </span>
-            <span className="text-emerald-700 font-black text-[9px]">
-              AUTO-GRADED
+            <span className="text-pink-950 font-black text-[9px]">
+              ACTIONABLE GAPS ↗
             </span>
           </div>
         </div>

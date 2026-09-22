@@ -151,8 +151,7 @@ export default async function HomePage() {
               </MotionStitchedTag>
             </h2>
             <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
-              We provide powerful tools for both creators and self-directed
-              learners to test and monitor knowledge effortlessly.
+              Explore the four core pillars powering interactive AI generation, frictionless multiplayer lobbies, and retention.
             </p>
           </div>
 
