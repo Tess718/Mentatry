@@ -41,7 +41,7 @@ export function FannedStepsShowcase() {
   // Mentatry Core Brand Palette: Cyan (#38bdf8), Lime (#a3e635), Yellow (#facc15), Pink (#f472b6)
   const steps: StepCard[] = [
     {
-      stepNumber: "STEP 01",
+      stepNumber: "01",
       headline: "Type Any Topic Or Notes",
       body: "Type a subject, upload class materials, or paste raw study notes directly to kick off instant synthesis.",
       bgColor: "#38bdf8", // Mentatry Brand Cyan
@@ -80,14 +80,14 @@ export function FannedStepsShowcase() {
             </span>
             <span className="text-sky-800 font-black flex items-center gap-0.5">
               <Zap className="w-2.5 h-2.5 fill-sky-600 text-sky-600 shrink-0" />
-              AUTO-SOLVE
+              EXPLANATIONS
             </span>
           </div>
         </div>
       ),
     },
     {
-      stepNumber: "STEP 02",
+      stepNumber: "02",
       headline: "Instant AI Quiz Crafting",
       body: "AI synthesizes balanced multiple-choice questions, tricky distractors, and verified rationale in seconds.",
       bgColor: "#a3e635", // Mentatry Brand Lime
@@ -124,7 +124,7 @@ export function FannedStepsShowcase() {
       ),
     },
     {
-      stepNumber: "STEP 03",
+      stepNumber: "03",
       headline: "Share Live Room Code",
       body: "Broadcast your 6-character room code for frictionless one-click entry on phones, tablets, or laptops.",
       bgColor: "#facc15", // Mentatry Brand Yellow
@@ -148,7 +148,7 @@ export function FannedStepsShowcase() {
               ROOM PASSCODE
             </span>
             <div className="bg-amber-400 text-black font-mono font-black text-lg py-0.5 tracking-widest border-2 border-black rounded shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] mx-2">
-              #MNT-742
+              K7M2P9
             </div>
           </div>
 
@@ -165,9 +165,9 @@ export function FannedStepsShowcase() {
       ),
     },
     {
-      stepNumber: "STEP 04",
+      stepNumber: "04",
       headline: "Real-Time Score Insights",
-      body: "Track live accuracy heatmaps, item miss rate diagnostics, and student mastery without manual grading.",
+      body: "Track live student accuracy, question miss-rate diagnostics, and participant rankings without manual grading.",
       bgColor: "#f472b6", // Mentatry Brand Pink
       visualization: (
         <div className="w-full bg-white border-2 border-black rounded-xl p-3 text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-[152px] select-none">
@@ -178,7 +178,7 @@ export function FannedStepsShowcase() {
               LIVE DIAGNOSTICS
             </span>
             <span className="font-mono text-[9px] bg-pink-100 text-pink-950 px-1.5 py-0.5 font-black uppercase rounded border border-pink-300">
-              91.2% MASTERY
+              91.2% ACCURACY
             </span>
           </div>
 
@@ -209,7 +209,7 @@ export function FannedStepsShowcase() {
           <div className="flex items-center justify-between text-[10px] font-mono border-t border-slate-100 pt-1 text-slate-800">
             <span className="flex items-center gap-1 font-bold text-pink-950">
               <Trophy className="w-3 h-3 text-amber-500 shrink-0" /> #1 Maya
-              (2,450 XP)
+              (2,450 pts)
             </span>
             <span className="text-emerald-700 font-black text-[9px]">
               AUTO-GRADED
@@ -385,7 +385,7 @@ export function FannedStepsShowcase() {
       {/* ========================================================
           DESKTOP VIEW (>= 768px): Full Horizontal Fanned Deck with Hover Spread
           ======================================================== */}
-      <div className="hidden md:flex w-full justify-center items-center overflow-x-auto lg:overflow-visible select-none py-4 px-2 sm:px-4">
+      <div className="hidden md:flex w-full justify-center items-center overflow-x-auto lg:overflow-visible select-none pt-4 px-2 sm:px-4">
         <div className="flex items-center justify-center w-full max-w-6xl mx-auto">
           {steps.map((step, index) => {
             const cardStyle = getDesktopCardStyle(index);
