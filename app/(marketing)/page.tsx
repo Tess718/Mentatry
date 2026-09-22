@@ -21,6 +21,8 @@ import {
 import { LandingTabShowcase } from "@/components/landing-tab-showcase";
 import { LandingFAQ } from "@/components/landing-faq";
 import { ExploreQuizCard } from "@/components/explore-quiz-card";
+import { StackedFolderShowcase } from "@/components/stacked-folder-showcase";
+import { FannedStepsShowcase } from "@/components/fanned-steps-showcase";
 import {
   MotionSection,
   MotionHero,
@@ -136,110 +138,26 @@ export default async function HomePage() {
       {/* Content Sections */}
       <div className="space-y-24 sm:space-y-32 mt-16 sm:mt-24">
         {/* Section 1: Features */}
-        <MotionSection id="features" className="space-y-10 scroll-mt-24">
-        <div className="text-center space-y-3">
-          <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
-            ACCELERATE YOUR
-            <br className="hidden sm:block" />
-            <MotionStitchedTag
-              initialRotate={1}
-              className="stitched-tag stitched-tag-lime inline-block"
-            >
-              LEARNING
-            </MotionStitchedTag>
-          </h2>
-          <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
-            We provide powerful tools for both creators and self-directed
-            learners to test and monitor knowledge effortlessly.
-          </p>
-        </div>
+        <section id="features" className="space-y-8 sm:space-y-12 overflow-visible scroll-mt-24">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
+              ACCELERATE YOUR
+              <br className="hidden sm:block" />
+              <MotionStitchedTag
+                initialRotate={1}
+                className="stitched-tag stitched-tag-lime inline-block"
+              >
+                LEARNING
+              </MotionStitchedTag>
+            </h2>
+            <p className="text-slate-400 font-semibold text-sm sm:text-base max-w-xl mx-auto">
+              We provide powerful tools for both creators and self-directed
+              learners to test and monitor knowledge effortlessly.
+            </p>
+          </div>
 
-        {/* Desktop 2x2 Grid with Staggered Scroll Entrance */}
-        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Card 1: AI Quiz Generator (Yellow) */}
-          <MotionStaggerItem className="neo-box-yellow rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <Brain className="w-8 h-8 text-black stroke-[2.5]" />
-              </div>
-              <h3 className="text-2xl font-black uppercase text-black">
-                AI Quiz Generator
-              </h3>
-              <p className="text-black font-bold text-sm leading-relaxed">
-                Generate high-quality multiple-choice questions from any custom
-                topic or pasted lecture notes with complete answer choices and
-                detailed explanations.
-              </p>
-            </div>
-            <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-              <span>Instant Generation</span>
-              <Zap className="w-4 h-4 fill-black" />
-            </div>
-          </MotionStaggerItem>
-
-          {/* Card 2: Join Code Rooms (Cyan) */}
-          <MotionStaggerItem className="neo-box-cyan rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                <GraduationCap className="w-8 h-8 text-black stroke-[2.5]" />
-              </div>
-              <h3 className="text-2xl font-black uppercase text-black">
-                Join Code Rooms
-              </h3>
-              <p className="text-black font-bold text-sm leading-relaxed">
-                Share quizzes seamlessly using 6-character room codes. No
-                complex setup for takers — jump straight into testing knowledge.
-              </p>
-            </div>
-            <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-              <span>Instant Room Codes</span>
-              <KeyRound className="w-4 h-4" />
-            </div>
-          </MotionStaggerItem>
-
-          {/* Card 3: Real-Time Insights (Pink) */}
-          <MotionStaggerItem className="neo-box-pink rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                <BarChart3 className="w-8 h-8 text-black stroke-[2.5]" />
-              </div>
-              <h3 className="text-2xl font-black uppercase text-black">
-                Real-Time Insights
-              </h3>
-              <p className="text-black font-bold text-sm leading-relaxed">
-                Detailed score analytics, accuracy metrics, and
-                question-by-question breakdowns to help you track participant
-                progress and identify study gaps.
-              </p>
-            </div>
-            <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-              <span>Automatic Grading</span>
-              <BarChart3 className="w-4 h-4" />
-            </div>
-          </MotionStaggerItem>
-
-          {/* Card 4: Gamification & Rewards (Lime) */}
-          <MotionStaggerItem className="neo-box-lime rounded-3xl p-8 space-y-6 flex flex-col justify-between h-full">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-white border-3 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black">
-                <Trophy className="w-8 h-8 text-black stroke-[2.5]" />
-              </div>
-              <h3 className="text-2xl font-black uppercase text-black">
-                Gamification & Rewards
-              </h3>
-              <p className="text-black font-bold text-sm leading-relaxed">
-                Keep learners motivated with a built-in achievement system!
-                Unlock exclusive badges, track daily streaks, and compete for
-                perfect scores.
-              </p>
-            </div>
-            <div className="pt-4 border-t-2 border-black flex items-center justify-between font-black text-xs uppercase text-black">
-              <span>Earn Badges</span>
-              <Trophy className="w-4 h-4" />
-            </div>
-          </MotionStaggerItem>
-        </MotionStaggerContainer>
-      </MotionSection>
+          <StackedFolderShowcase />
+        </section>
 
       {/* Section 1.5: Featured Community Quizzes Preview */}
       {featuredQuizzes.length > 0 && (
@@ -502,8 +420,8 @@ export default async function HomePage() {
         </MotionStaggerContainer>
       </MotionSection>
 
-      {/* Section 2: "HOW IT WORKS" 4-Step Stepper */}
-      <MotionSection id="how-it-works" className="space-y-10 scroll-mt-24">
+      {/* Section 2: "HOW MENTATRY WORKS" Fanned Cards */}
+      <MotionSection id="how-it-works" className="space-y-8 sm:space-y-10 scroll-mt-24 overflow-visible">
         <div className="text-center space-y-3">
           <h2 className="text-3xl sm:text-5xl font-black uppercase text-white tracking-tight">
             HOW MENTATRY
@@ -520,63 +438,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <MotionStaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.1}>
-          {/* Step 1 */}
-          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(250,204,21,1)] h-full">
-            <div className="w-10 h-10 bg-amber-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
-              01
-            </div>
-            <h3 className="text-xl font-black uppercase text-black">
-              Enter Subject
-            </h3>
-            <p className="text-xs font-bold text-slate-700 leading-relaxed">
-              Type any subject topic (e.g. &apos;Quantum Mechanics&apos;) or
-              paste raw study notes directly.
-            </p>
-          </MotionStaggerItem>
-
-          {/* Step 2 */}
-          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(163,230,53,1)] h-full">
-            <div className="w-10 h-10 bg-lime-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
-              02
-            </div>
-            <h3 className="text-xl font-black uppercase text-black">
-              AI Generation
-            </h3>
-            <p className="text-xs font-bold text-slate-700 leading-relaxed">
-              AI crafts verified multiple-choice questions, options, and
-              explanations instantly.
-            </p>
-          </MotionStaggerItem>
-
-          {/* Step 3 */}
-          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(244,114,182,1)] h-full">
-            <div className="w-10 h-10 bg-pink-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
-              03
-            </div>
-            <h3 className="text-xl font-black uppercase text-black">
-              Share Code
-            </h3>
-            <p className="text-xs font-bold text-slate-700 leading-relaxed">
-              Share the 6-character room code with quiz takers for one-click
-              access on any device.
-            </p>
-          </MotionStaggerItem>
-
-          {/* Step 4 */}
-          <MotionStaggerItem className="neo-box p-6 bg-white text-black space-y-4 rounded-2xl shadow-[6px_6px_0px_0px_rgba(103,232,249,1)] h-full">
-            <div className="w-10 h-10 bg-cyan-300 border-2 border-black rounded-xl flex items-center justify-center font-black text-lg">
-              04
-            </div>
-            <h3 className="text-xl font-black uppercase text-black">
-              Live Insights
-            </h3>
-            <p className="text-xs font-bold text-slate-700 leading-relaxed">
-              View real-time score analytics, question miss rates, and
-              individual attempt records.
-            </p>
-          </MotionStaggerItem>
-        </MotionStaggerContainer>
+        <FannedStepsShowcase />
       </MotionSection>
 
       {/* Section 3: "OUR PLATFORM IS EASY TO USE" Interactive Tab Showcase */}
