@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@500;700;800;900&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -19,6 +19,10 @@
   .font-bebas {
     font-family: 'Bebas Neue', sans-serif;
     letter-spacing: 0.05em;
+  }
+
+  .font-handwritten {
+    font-family: 'Caveat', cursive, system-ui;
   }
 
   /* Stitched Tag Badges inspired by pop-cyber brutalism */
@@ -208,3 +212,110 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Stacked Folder Cards: Hard-edged cards with 45° trapezoidal tabs */
+/* Mobile / Small Screens (< 1024px) */
+.folder-card-0 {
+  clip-path: polygon(0 0, 24% 0, calc(24% + 14px) 44px, 100% 44px, 100% 100%, 0 100%);
+}
+.folder-card-1 {
+  clip-path: polygon(0 44px, calc(24% - 14px) 44px, 24% 0, 48% 0, calc(48% + 14px) 44px, 100% 44px, 100% 100%, 0 100%);
+}
+.folder-card-2 {
+  clip-path: polygon(0 44px, calc(48% - 14px) 44px, 48% 0, 72% 0, calc(72% + 14px) 44px, 100% 44px, 100% 100%, 0 100%);
+}
+.folder-card-3 {
+  clip-path: polygon(0 44px, calc(72% - 14px) 44px, 72% 0, 96% 0, calc(96% + 14px) 44px, 100% 44px, 100% 100%, 0 100%);
+}
+
+.folder-tab-pos-0 {
+  left: 0%;
+  width: 24%;
+  height: 44px;
+}
+.folder-tab-pos-1 {
+  left: 24%;
+  width: 24%;
+  height: 44px;
+}
+.folder-tab-pos-2 {
+  left: 48%;
+  width: 24%;
+  height: 44px;
+}
+.folder-tab-pos-3 {
+  left: 72%;
+  width: 24%;
+  height: 44px;
+}
+
+/* Base card height (< 1024px) */
+.folder-card-fixed {
+  height: 680px !important;
+  min-height: 680px !important;
+}
+
+/* Desktop Screens (>= 1024px) */
+@media (min-width: 1024px) {
+  .folder-card-0 {
+    clip-path: polygon(0px 0px, 220px 0px, 288px 68px, 100% 68px, 100% 100%, 0px 100%);
+  }
+  .folder-card-1 {
+    clip-path: polygon(0px 68px, 152px 68px, 220px 0px, 440px 0px, 508px 68px, 100% 68px, 100% 100%, 0px 100%);
+  }
+  .folder-card-2 {
+    clip-path: polygon(0px 68px, 372px 68px, 440px 0px, 660px 0px, 728px 68px, 100% 68px, 100% 100%, 0px 100%);
+  }
+  .folder-card-3 {
+    clip-path: polygon(0px 68px, 592px 68px, 660px 0px, 880px 0px, 948px 68px, 100% 68px, 100% 100%, 0px 100%);
+  }
+
+  .folder-tab-pos-0 {
+    left: 0px;
+    width: 220px;
+    height: 68px;
+  }
+  .folder-tab-pos-1 {
+    left: 220px;
+    width: 220px;
+    height: 68px;
+  }
+  .folder-tab-pos-2 {
+    left: 440px;
+    width: 220px;
+    height: 68px;
+  }
+  .folder-tab-pos-3 {
+    left: 660px;
+    width: 220px;
+    height: 68px;
+  }
+
+  .folder-card-fixed {
+    height: 540px !important;
+    min-height: 540px !important;
+  }
+}
+
+/* Lenis smooth scrolling rules - only active when html has .lenis class */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
