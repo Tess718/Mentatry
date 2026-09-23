@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Search, X, SlidersHorizontal, Sparkles, Flame } from "lucide-react";
+import { SlidersHorizontal, Sparkles, Flame } from "lucide-react";
 
 export function ExploreFilters({
   totalCount,
@@ -14,22 +14,8 @@ export function ExploreFilters({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const currentQuery = searchParams.get("q") || "";
   const currentDifficulty = searchParams.get("difficulty") || "all";
   const currentSort = searchParams.get("sort") || "popular";
-
-  const [searchTerm, setSearchTerm] = useState(currentQuery);
-
-  // Debounced search query update
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (searchTerm !== currentQuery) {
-        updateParams({ q: searchTerm || null, page: null });
-      }
-    }, 350);
-
-    return () => clearTimeout(handler);
-  }, [searchTerm, currentQuery]);
 
   const updateParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,36 +33,8 @@ export function ExploreFilters({
     });
   };
 
-  const clearSearch = () => {
-    setSearchTerm("");
-    updateParams({ q: null, page: null });
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="relative max-w-3xl mx-auto">
-        <div className="relative flex items-center">
-          <Search className="absolute left-4 w-5 h-5 text-slate-400 pointer-events-none" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search quizzes by topic, keyword, or title (e.g. JavaScript, Space, Biology)..."
-            className="w-full bg-slate-900 text-white placeholder-slate-500 text-sm sm:text-base font-bold py-3.5 pl-12 pr-10 border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:border-amber-400 transition-colors"
-          />
-          {searchTerm && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-3.5 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
-              aria-label="Clear search query"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
+    <div className="w-full">
       {/* Filter and Sort Controls Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b-2 border-slate-800 pb-5">
         {/* Difficulty Pills */}

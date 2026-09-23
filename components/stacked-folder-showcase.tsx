@@ -88,10 +88,7 @@ const FEATURES: FeatureCardData[] = [
 
 export function StackedFolderShowcase() {
   return (
-    <div
-      className="relative w-full"
-      style={{ overflow: "visible" }}
-    >
+    <div className="relative w-full" style={{ overflow: "visible" }}>
       {FEATURES.map((feature, index) => {
         return (
           <div
@@ -199,7 +196,9 @@ export function StackedFolderShowcase() {
 
                         <div className="flex items-center justify-between pt-1 border-t border-slate-300 text-[10px] font-mono font-bold text-slate-600">
                           <span>10 MCQs Generated</span>
-                          <span className="text-emerald-700 font-black">EXPLANATIONS READY</span>
+                          <span className="text-emerald-700 font-black">
+                            EXPLANATIONS READY
+                          </span>
                         </div>
                       </div>
                     )}
@@ -227,7 +226,8 @@ export function StackedFolderShowcase() {
 
                         <div className="flex items-center justify-between text-[11px] font-mono border-t border-slate-800 pt-2 text-slate-300">
                           <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3 text-cyan-400" /> 16 Players
+                            <Users className="w-3 h-3 text-cyan-400" /> 16
+                            Players
                           </span>
                           <span className="bg-cyan-950 text-cyan-300 font-bold px-2 py-0.5 text-[10px] uppercase border border-cyan-700">
                             NO LOGIN REQUIRED
@@ -272,7 +272,9 @@ export function StackedFolderShowcase() {
                           <div className="space-y-1">
                             <div className="flex justify-between font-mono text-[10px] font-bold">
                               <span>Q3 (Edge Cases)</span>
-                              <span className="text-red-700 font-black">42% (Review)</span>
+                              <span className="text-red-700 font-black">
+                                42% (Review)
+                              </span>
                             </div>
                             <div className="w-full bg-white h-2.5 border border-black">
                               <div className="bg-red-500 h-full w-[42%]" />
@@ -323,7 +325,10 @@ export function StackedFolderShowcase() {
         );
       })}
       {/* Brief beat so the completed 4-card stack stays pinned for a moment before scrolling away */}
-      <div style={{ height: "14vh", pointerEvents: "none" }} aria-hidden="true" />
+      <div
+        style={{ height: "14vh", pointerEvents: "none" }}
+        aria-hidden="true"
+      />
     </div>
   );
 }
