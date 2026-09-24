@@ -221,7 +221,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <MotionStaggerContainer className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <MotionStaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Flow 1: Solo / Async */}
           <MotionStaggerItem className="neo-box bg-white p-8 rounded-3xl space-y-6 shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] border-4 border-amber-400 flex flex-col h-full">
             <div className="w-16 h-16 bg-amber-300 border-3 border-black rounded-2xl flex items-center justify-center shrink-0">
